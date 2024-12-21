@@ -1,0 +1,4 @@
+name: SunTNT
+version: '${project.version}'
+main: ru.loper.suntnt.SunTNT
+api-version: '1.20'
