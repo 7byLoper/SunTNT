@@ -1,0 +1,7 @@
+messages:
+  give-sender: '&8 | &fВы &7успешно выдали&f динамит {name} &7x{amount}&f игроку &7{player}'
+  give-player: '&8 | &fВы &7успешно получили&f динамит {name} &7x{amount}'
+  add-custom-item: '&8 | &fВы успешно добавили предмет {name}'
+  remove-custom-item: '&8 | &fВы успешно удалили предмет {name}'
+  error-command: '&8 | &fОшибка в выполнении команды'
+  error-item: '&8 | &fПредемет не должен быть воздухом'
