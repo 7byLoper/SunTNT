@@ -32,6 +32,7 @@ public class TNT {
     private final int blocksRadius;
 
     private final int iceRadius;
+    private final long iceDelay;
 
     private final boolean ice;
 
@@ -89,7 +90,16 @@ public class TNT {
         this.fuseTicks = config.getInt("fuse-ticks");
         this.blocksRadius = config.getInt("blocks-radius");
         this.ice = config.getBoolean("ice");
-        this.iceRadius = config.getInt("ice-radius");
+        if(config.contains("ice-radius")) {
+            iceRadius = config.getInt("ice-radius");
+        }else{
+            iceRadius = 0;
+        }
+        if(config.contains("ice-delay")) {
+            iceDelay = config.getLong("ice-delay");
+        }else{
+            iceDelay = 105L;
+        }
         this.displayName = Colorize.format(config.getString("display-name"));
         this.lore = Colorize.format(config.getStringList("lore"));
         recipe:
@@ -137,5 +147,9 @@ public class TNT {
 
     public int getIceRadius() {
         return iceRadius;
+    }
+
+    public long getIceDelay() {
+        return iceDelay;
     }
 }

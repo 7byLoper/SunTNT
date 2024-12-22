@@ -7,7 +7,6 @@ explosion-radius: 4
 fuse-ticks: 100
 blocks-radius: 0
 ice: false
-ice-radius: 0
 display-name: '&x&f&b&7&0&7&0Н&x&f&b&7&4&6&dа&x&f&b&7&8&6&9д&x&f&b&7&c&6&6е&x&f&c&7&f&6&2ж&x&f&c&8&3&5&fн&x&f&c&8&7&5&bы&x&f&c&8&b&5&8й &x&f&c&8&f&5&4с&x&f&c&9&3&5&1т&x&f&c&9&7&4&dи&x&f&d&9&a&4&aл&x&f&d&9&e&4&6л&x&f&d&a&2&4&3е&x&f&d&a&6&3&fр'
 lore:
   - ''

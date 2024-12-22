@@ -35,7 +35,7 @@ public class TNTCommand implements CommandExecutor {
             }
             giveOrDrop(target, itemStack);
             Colorize.sendMessage(sender,SunTNT.getInstance().getConfig().getString("messages.give-sender").replace("{name}",tnt.getDisplayName()).replace("{amount}",String.valueOf(itemStack.getAmount())).replace("{player}", target.getDisplayName()));
-            Colorize.sendMessage(target,SunTNT.getInstance().getConfig().getString("messages.give-sender").replace("{name}",tnt.getDisplayName()).replace("{amount}",String.valueOf(itemStack.getAmount())).replace("{player}", sender.getName()));
+            Colorize.sendMessage(target,SunTNT.getInstance().getConfig().getString("messages.give-player").replace("{name}",tnt.getDisplayName()).replace("{amount}",String.valueOf(itemStack.getAmount())).replace("{player}", sender.getName()));
         } else if (args[0].equalsIgnoreCase("customItems")) {
             if(args.length != 3){
                 Colorize.sendMessage(sender,SunTNT.getInstance().getConfig().getString("messages.error-command"));

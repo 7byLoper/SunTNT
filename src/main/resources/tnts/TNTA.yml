@@ -7,7 +7,6 @@ explosion-radius: 12
 fuse-ticks: 200
 blocks-radius: 0
 ice: false
-ice-radius: 0
 display-name: '#a8ebfcДинамит A'
 lore:
   - ''

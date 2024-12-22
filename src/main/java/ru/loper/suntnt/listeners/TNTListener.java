@@ -95,7 +95,7 @@ public class TNTListener implements Listener {
             event.blockList().addAll(getNearbyBlocks(entity.getLocation(), tnt.getBlocksRadius()).stream().filter(block -> !block.getType().isAir() && !block.getType().equals(Material.BEDROCK) && !block.getType().equals(Material.BARRIER) && !block.getType().equals(Material.COMMAND_BLOCK) && !block.getType().equals(Material.END_PORTAL_FRAME) && !block.getType().equals(Material.END_PORTAL) && !block.getType().equals(Material.ANCIENT_DEBRIS) && !block.getType().equals(Material.NETHERITE_BLOCK) && !block.getType().equals(Material.OBSIDIAN) && !block.getType().equals(Material.CRYING_OBSIDIAN)).toList());
         }
         if (tnt.isIce()) {
-            createIceSphere(entity.getLocation(), tnt.getIceRadius());
+            createIceSphere(entity.getLocation(), tnt.getIceRadius(), tnt.getIceDelay());
         }
     }
 
@@ -112,10 +112,9 @@ public class TNTListener implements Listener {
         return spawnerItem;
     }
 
-    private void createIceSphere(Location center, int radius) {
+    private void createIceSphere(Location center, int radius, long delay) {
         World world = center.getWorld();
         if (world != null) {
-            long delay = 105L;
             for (int y = -radius; y <= radius; ++y) {
                 for (int x = -radius; x <= radius; ++x) {
                     for (int z = -radius; z <= radius; ++z) {
