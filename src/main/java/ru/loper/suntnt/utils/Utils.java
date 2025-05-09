@@ -20,9 +20,10 @@ public class Utils {
         }
         return files;
     }
-    public static ItemStack getCustomItem(String path){
-        ItemStack item = SunTNT.getCustomItemsConfig().getConfig().getItemStack("items."+path);
-        if(item != null){
+
+    public static ItemStack getCustomItem(String path) {
+        ItemStack item = SunTNT.getInstance().getConfigManager().getCustomConfig("customitems").getConfig().getItemStack("items." + path);
+        if (item != null) {
             return item.clone();
         }
         return null;

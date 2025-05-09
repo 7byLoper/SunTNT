@@ -1,6 +1,13 @@
 name: SunTNT
 version: '${project.version}'
 main: ru.loper.suntnt.SunTNT
-api-version: '1.20'
+author: Loper
+api-version: '1.16'
+depend:
+  - SunCore
+softdepend:
+  - SunProtectionStones
 commands:
-  tnt: {}
+  suntnt:
+    aliases:
+      - tnt

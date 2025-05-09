@@ -9,9 +9,12 @@ blocks-radius: 0
 ice: true
 ice-radius: 4
 ice-delay: 105
-display-name: '&x&c&6&e&5&f&bЛ&x&c&1&e&3&f&bе&x&b&b&e&2&f&bд&x&b&6&e&0&f&bя&x&b&1&d&f&f&cн&x&a&b&d&d&f&cо&x&a&6&d&b&f&cй &x&a&1&d&a&f&cд&x&9&c&d&8&f&cи&x&9&6&d&6&f&cн&x&9&1&d&5&f&dа&x&8&c&d&3&f&dм&x&8&6&d&2&f&dи&x&8&1&d&0&f&dт'
-lore:
-  - ''
-  - '&8 • &fПри взрыве образует ледяную сферу'
-  - '&8   &fна &x&c&6&e&5&f&b5 секунд&f. Также заменяет'
-  - '&8   &fпузырьки на обычную воду.'
+
+item:
+  material: TNT
+  display-name: '&x&c&6&e&5&f&bЛ&x&c&1&e&3&f&bе&x&b&b&e&2&f&bд&x&b&6&e&0&f&bя&x&b&1&d&f&f&cн&x&a&b&d&d&f&cо&x&a&6&d&b&f&cй &x&a&1&d&a&f&cд&x&9&c&d&8&f&cи&x&9&6&d&6&f&cн&x&9&1&d&5&f&dа&x&8&c&d&3&f&dм&x&8&6&d&2&f&dи&x&8&1&d&0&f&dт'
+  lore:
+    - ''
+    - '&8 • &fПри взрыве образует ледяную сферу'
+    - '&8   &fна &x&c&6&e&5&f&b5 секунд&f. Также заменяет'
+    - '&8   &fпузырьки на обычную воду.'

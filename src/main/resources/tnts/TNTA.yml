@@ -7,10 +7,14 @@ explosion-radius: 12
 fuse-ticks: 200
 blocks-radius: 0
 ice: false
-display-name: '#a8ebfcДинамит A'
-lore:
-  - ''
-  - '&8 • &fРадиус взрыва в #a8ebfc3 раза больше &fобычного.'
+
+item:
+  material: TNT
+  display_name: '&#a8ebfcДинамит A'
+  lore:
+    - ''
+    - '&8 • &fРадиус взрыва в &#a8ebfc3 раза больше &fобычного.'
+
 recipe:
   shape: 'GSG:TGT:GSG'
   ingredients:

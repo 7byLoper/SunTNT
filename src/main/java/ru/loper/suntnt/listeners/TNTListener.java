@@ -1,19 +1,11 @@
 package ru.loper.suntnt.listeners;
 
+import com.destroystokyo.paper.event.block.TNTPrimeEvent;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Levelled;
@@ -28,7 +20,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.TNTPrimeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
@@ -38,38 +29,46 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import ru.loper.sunprotectionstones.PSRegion;
+import ru.loper.sunprotectionstones.SunProtectionStones;
 import ru.loper.suntnt.SunTNT;
-import ru.loper.suntnt.tnt.TNT;
+import ru.loper.suntnt.tnt.CustomTNT;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class TNTListener implements Listener {
     private final SunTNT plugin;
-    private final Cache<Block, TNT> cachedTNTs = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+    private final Cache<Block, CustomTNT> cachedTNTs = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
     private final Cache<Location, Integer> waterBlocks = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
 
     public TNTListener(SunTNT plugin) {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         Entity entity = event.getEntity();
         if (!entity.hasMetadata("TNTType")) {
             return;
         }
         String tntType = (entity.getMetadata("TNTType").get(0)).asString();
-        TNT tnt = SunTNT.getTntManager().getTNT(tntType);
-        if (tnt == null) {
+        CustomTNT customTnt = plugin.getTntManager().getCustomTNT(tntType);
+        if (customTnt == null) {
             event.blockList().removeIf(block -> block.getType().equals(Material.SPAWNER));
             return;
         }
-        if (tnt.getSpawnerChance() > 0) {
+        if (customTnt.getSpawnerChance() > 0) {
             ThreadLocalRandom random = ThreadLocalRandom.current();
-            if (random.nextInt(0, 101) <= tnt.getSpawnerChance() || !tnt.isSpawnerAlwaysSaveMob()) {
+            if (random.nextInt(0, 101) <= customTnt.getSpawnerChance() || !customTnt.isSpawnerAlwaysSaveMob()) {
                 for (Block block2 : event.blockList()) {
-                    if (tnt.getSpawnerChance() <= 0 || !block2.getType().equals(Material.SPAWNER)) continue;
+                    if (customTnt.getSpawnerChance() <= 0 || !block2.getType().equals(Material.SPAWNER)) continue;
                     ItemStack mobSpawner = new ItemStack(Material.SPAWNER, 1);
-                    if (random.nextInt(0, 101) <= tnt.getSpawnerChance() || tnt.isSpawnerAlwaysSaveMob()) {
-                        CreatureSpawner creatureSpawner = (CreatureSpawner)block2.getState();
+                    if (random.nextInt(0, 101) <= customTnt.getSpawnerChance() || customTnt.isSpawnerAlwaysSaveMob()) {
+                        CreatureSpawner creatureSpawner = (CreatureSpawner) block2.getState();
                         EntityType entityType = creatureSpawner.getSpawnedType();
                         mobSpawner = createSpawnerItemStack(entityType);
                     }
@@ -83,29 +82,38 @@ public class TNTListener implements Listener {
         } else {
             event.blockList().removeIf(block -> block.getType().equals(Material.SPAWNER));
         }
-        if (tnt.getObsidianChance() > 0) {
+        if (customTnt.getObsidianChance() > 0) {
             event.blockList().addAll(getNearbyBlocks(entity.getLocation(), 2).stream().filter(block -> block.getType().equals(Material.OBSIDIAN) || block.getType().equals(Material.CRYING_OBSIDIAN) || block.getType().equals(Material.ANCIENT_DEBRIS) || block.getType().equals(Material.NETHERITE_BLOCK) || block.getType().equals(Material.ENDER_CHEST) || block.getType().equals(Material.ENCHANTING_TABLE) || block.getType().equals(Material.ANVIL)).toList());
         }
-        if (tnt.getLiquidChance() > 0) {
+        if (customTnt.getLiquidChance() > 0) {
             event.blockList().addAll(getNearbyBlocks(entity.getLocation(), 2).stream().filter(block -> !block.getType().isAir() && !block.getType().equals(Material.BEDROCK) && !block.getType().equals(Material.BARRIER) && !block.getType().equals(Material.COMMAND_BLOCK) && !block.getType().equals(Material.END_PORTAL_FRAME) && !block.getType().equals(Material.END_PORTAL) && !block.getType().equals(Material.ANCIENT_DEBRIS) && !block.getType().equals(Material.NETHERITE_BLOCK) && !block.getType().equals(Material.OBSIDIAN) && !block.getType().equals(Material.CRYING_OBSIDIAN)).toList());
         } else {
             event.blockList().removeIf(Block::isLiquid);
         }
-        if (tnt.getBlocksRadius() > 0) {
-            event.blockList().addAll(getNearbyBlocks(entity.getLocation(), tnt.getBlocksRadius()).stream().filter(block -> !block.getType().isAir() && !block.getType().equals(Material.BEDROCK) && !block.getType().equals(Material.BARRIER) && !block.getType().equals(Material.COMMAND_BLOCK) && !block.getType().equals(Material.END_PORTAL_FRAME) && !block.getType().equals(Material.END_PORTAL) && !block.getType().equals(Material.ANCIENT_DEBRIS) && !block.getType().equals(Material.NETHERITE_BLOCK) && !block.getType().equals(Material.OBSIDIAN) && !block.getType().equals(Material.CRYING_OBSIDIAN)).toList());
+        if (customTnt.getBlocksRadius() > 0) {
+            event.blockList().addAll(getNearbyBlocks(entity.getLocation(), customTnt.getBlocksRadius()).stream().filter(block -> !block.getType().isAir() && !block.getType().equals(Material.BEDROCK) && !block.getType().equals(Material.BARRIER) && !block.getType().equals(Material.COMMAND_BLOCK) && !block.getType().equals(Material.END_PORTAL_FRAME) && !block.getType().equals(Material.END_PORTAL) && !block.getType().equals(Material.ANCIENT_DEBRIS) && !block.getType().equals(Material.NETHERITE_BLOCK) && !block.getType().equals(Material.OBSIDIAN) && !block.getType().equals(Material.CRYING_OBSIDIAN)).toList());
         }
-        if (tnt.isIce()) {
-            createIceSphere(entity.getLocation(), tnt.getIceRadius(), tnt.getIceDelay());
+        if (customTnt.isIce()) {
+            createIceSphere(entity.getLocation(), customTnt.getIceRadius(), customTnt.getIceDelay());
+        }
+        if (customTnt.isBreakPSRegion() && SunTNT.getInstance().isProtectionStonesStatus()) {
+            for (Block block : event.blockList()) {
+                if (!SunProtectionStones.isProtectBlock(block)) continue;
+                PSRegion rg = PSRegion.fromLocation(block.getLocation());
+                if (rg == null) continue;
+                event.blockList().remove(block);
+                rg.removeStrength(1);
+            }
         }
     }
 
     public ItemStack createSpawnerItemStack(EntityType entityType) {
         ItemStack spawnerItem = new ItemStack(Material.SPAWNER);
-        BlockStateMeta blockStateMeta = (BlockStateMeta)spawnerItem.getItemMeta();
+        BlockStateMeta blockStateMeta = (BlockStateMeta) spawnerItem.getItemMeta();
         if (blockStateMeta == null) {
             return null;
         }
-        CreatureSpawner spawner = (CreatureSpawner)blockStateMeta.getBlockState();
+        CreatureSpawner spawner = (CreatureSpawner) blockStateMeta.getBlockState();
         spawner.setSpawnedType(entityType);
         blockStateMeta.setBlockState(spawner);
         spawnerItem.setItemMeta(blockStateMeta);
@@ -120,9 +128,10 @@ public class TNTListener implements Listener {
                     for (int z = -radius; z <= radius; ++z) {
                         BlockData blockData;
                         Block block;
-                        if (!(Math.sqrt(x * x + y * y + z * z) <= (double)radius) || !(block = world.getBlockAt(center.clone().add(x, y, z))).getType().isAir() && !block.isLiquid()) continue;
+                        if (!(Math.sqrt(x * x + y * y + z * z) <= (double) radius) || !(block = world.getBlockAt(center.clone().add(x, y, z))).getType().isAir() && !block.isLiquid())
+                            continue;
                         if (block.getType().equals(Material.WATER) && (blockData = block.getBlockData()) instanceof Levelled) {
-                            Levelled levelled = (Levelled)(blockData);
+                            Levelled levelled = (Levelled) (blockData);
                             if (levelled.getLevel() == 0) {
                                 waterBlocks.put(block.getLocation(), levelled.getLevel());
                             }
@@ -156,22 +165,22 @@ public class TNTListener implements Listener {
         }, delay);
     }
 
-    @EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onTNTPrime(TNTPrimeEvent event) {
         Block block = event.getBlock();
         if (!block.hasMetadata("TNTType")) {
             return;
         }
         String tntType = (block.getMetadata("TNTType").get(0)).asString();
-        TNT tnt = SunTNT.getTntManager().getTNT(tntType);
-        if (tnt == null) {
+        CustomTNT customTnt = plugin.getTntManager().getCustomTNT(tntType);
+        if (customTnt == null) {
             return;
         }
-        cachedTNTs.put(block, tnt);
+        cachedTNTs.put(block, customTnt);
         block.removeMetadata("TNTType", plugin);
     }
 
-    @EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onTNTPrime(ExplosionPrimeEvent event) {
         Entity entity = event.getEntity();
         if (!(entity instanceof TNTPrimed)) {
@@ -181,11 +190,11 @@ public class TNTListener implements Listener {
             return;
         }
         String tntType = (entity.getMetadata("TNTType").get(0)).asString();
-        TNT tnt = SunTNT.getTntManager().getTNT(tntType);
-        if (tnt == null) {
+        CustomTNT customTnt = plugin.getTntManager().getCustomTNT(tntType);
+        if (customTnt == null) {
             return;
         }
-        event.setRadius(tnt.getExplosionRadius());
+        event.setRadius(customTnt.getExplosionRadius());
     }
 
     @EventHandler
@@ -194,15 +203,15 @@ public class TNTListener implements Listener {
         if (!(entity instanceof TNTPrimed tntPrimed)) {
             return;
         }
-        TNT tnt = cachedTNTs.getIfPresent(event.getLocation().getBlock());
-        if (tnt == null) {
+        CustomTNT customTnt = cachedTNTs.getIfPresent(event.getLocation().getBlock());
+        if (customTnt == null) {
             return;
         }
-        tntPrimed.setFuseTicks(tnt.getFuseTicks());
-        entity.setMetadata("TNTType", new FixedMetadataValue(plugin, tnt.getName()));
+        tntPrimed.setFuseTicks(customTnt.getFuseTicks());
+        entity.setMetadata("TNTType", new FixedMetadataValue(plugin, customTnt.getName()));
     }
 
-    @EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
         ItemStack itemStack = event.getItemInHand();
         if (!itemStack.getType().equals(Material.TNT)) {
@@ -217,38 +226,32 @@ public class TNTListener implements Listener {
         block.setMetadata("TNTType", new FixedMetadataValue(plugin, tntType));
     }
 
-    @EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPistonExtend(BlockPistonExtendEvent event) {
-        List<Block> blocks = event.getBlocks();
-        ListIterator<Block> blockIterator = blocks.listIterator(blocks.size());
-        while (blockIterator.hasPrevious()) {
-            Block block = blockIterator.previous();
-            if (!block.getType().equals(Material.TNT) || !block.hasMetadata("TNTType")) continue;
-            String tntType = (block.getMetadata("TNTType").get(0)).asString();
-            block.removeMetadata("TNTType", plugin);
-            Block nextBlock = block.getRelative(event.getDirection(), 1);
-            nextBlock.setMetadata("TNTType", new FixedMetadataValue(plugin, tntType));
-        }
+        updateBlockMeta(event.getBlocks(), event.getDirection());
     }
 
-    @EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPistonRetract(BlockPistonRetractEvent event) {
         if (!event.isSticky()) {
             return;
         }
-        List<Block> blocks = event.getBlocks();
-        ListIterator<Block> blockIterator = blocks.listIterator(blocks.size());
+        updateBlockMeta(event.getBlocks(), event.getDirection());
+    }
+
+    private void updateBlockMeta(List<Block> blocks2, BlockFace direction) {
+        ListIterator<Block> blockIterator = blocks2.listIterator(blocks2.size());
         while (blockIterator.hasPrevious()) {
             Block block = blockIterator.previous();
             if (!block.getType().equals(Material.TNT) || !block.hasMetadata("TNTType")) continue;
             String tntType = (block.getMetadata("TNTType").get(0)).asString();
             block.removeMetadata("TNTType", plugin);
-            Block nextBlock = block.getRelative(event.getDirection(), 1);
+            Block nextBlock = block.getRelative(direction, 1);
             nextBlock.setMetadata("TNTType", new FixedMetadataValue(plugin, tntType));
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGH, ignoreCancelled=true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         if (!block.getType().equals(Material.TNT)) {
@@ -258,9 +261,9 @@ public class TNTListener implements Listener {
             return;
         }
         String tntType = (block.getMetadata("TNTType").get(0)).asString();
-        TNT tnt = SunTNT.getTntManager().getTNT(tntType);
+        CustomTNT customTnt = plugin.getTntManager().getCustomTNT(tntType);
         event.setDropItems(false);
-        block.getLocation().getWorld().dropItemNaturally(block.getLocation(), tnt.getItemStack());
+        block.getLocation().getWorld().dropItemNaturally(block.getLocation(), customTnt.getItemStack());
         block.removeMetadata("TNTType", plugin);
     }
 
