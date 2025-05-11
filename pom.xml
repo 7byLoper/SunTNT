@@ -70,7 +70,7 @@
       <dependency>
           <groupId>ru.loper.suncore</groupId>
           <artifactId>suncore</artifactId>
-          <version>1.0</version>
+          <version>1.0.3</version>
           <scope>system</scope>
           <systemPath>C:/Users/Loper/Desktop/Loper pack/projects/java/SunCore/SunCore.jar</systemPath>
       </dependency>

@@ -1,0 +1,23 @@
+name: 'A'
+obsidian-chance: 0
+liquid-chance: 0
+spawner-chance: 0
+spawner-always-save-mob: false
+explosion-radius: 12
+fuse-ticks: 200
+blocks-radius: 0
+ice: false
+
+item:
+  material: TNT
+  display_name: '&#a8ebfcДинамит A'
+  lore:
+    - ''
+    - '&8 • &fРадиус взрыва в &#a8ebfc3 раза больше &fобычного.'
+
+recipe:
+  shape: 'GSG:TGT:GSG'
+  ingredients:
+    G: 'SAND'
+    S: 'GUNPOWDER'
+    T: 'TNT'

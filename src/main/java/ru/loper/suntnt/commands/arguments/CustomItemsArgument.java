@@ -47,7 +47,7 @@ public class CustomItemsArgument implements SubCommand {
             return;
         }
 
-        CustomConfig itemsConfig = configManager.getCustomConfig("items");
+        CustomConfig itemsConfig = configManager.getCustomConfig("customItems");
         itemsConfig.getConfig().set("items." + args[2], null);
         itemsConfig.saveConfig();
         sender.sendMessage(Colorize.parse("&d ▶ &fВы успешно удалили кастомный предмет %s из конфига".formatted(args[2])));
@@ -70,7 +70,7 @@ public class CustomItemsArgument implements SubCommand {
             return;
         }
 
-        CustomConfig itemsConfig = configManager.getCustomConfig("items");
+        CustomConfig itemsConfig = configManager.getCustomConfig("customItems");
         itemsConfig.getConfig().set("items." + args[2], itemStack);
         itemsConfig.saveConfig();
         sender.sendMessage(Colorize.parse("&d ▶ &fВы успешно добавили кастомный предмет %s в конфиг".formatted(itemStack.getItemMeta().getDisplayName())));
@@ -118,7 +118,7 @@ public class CustomItemsArgument implements SubCommand {
     }
 
     private ConfigurationSection getItemsSection() {
-        return configManager.getCustomConfig("customitems").getConfig().getConfigurationSection("items");
+        return configManager.getCustomConfig("customItems").getConfig().getConfigurationSection("items");
     }
 
     @Override
