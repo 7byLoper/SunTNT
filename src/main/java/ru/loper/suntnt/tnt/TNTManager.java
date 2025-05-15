@@ -1,5 +1,7 @@
 package ru.loper.suntnt.tnt;
 
+import lombok.Getter;
+import org.bukkit.NamespacedKey;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.utils.Utils;
@@ -11,8 +13,11 @@ import java.util.List;
 public class TNTManager {
     private final SunTNT plugin;
     private final HashMap<String, CustomTNT> customTNTS = new HashMap<>();
+    @Getter
+    private final NamespacedKey tntTypeKey;
 
     public TNTManager(SunTNT plugin) {
+        tntTypeKey = new NamespacedKey(plugin, "TNTType");
         this.plugin = plugin;
         init();
     }
@@ -31,7 +36,7 @@ public class TNTManager {
             if (!file.getName().endsWith(".yml")) continue;
 
             CustomConfig config = new CustomConfig(file);
-            customTNTS.put(config.getConfig().getString("name", "default"), new CustomTNT(config));
+            customTNTS.put(config.getConfig().getString("name", "default"), new CustomTNT(config, this));
         }
     }
 

@@ -218,7 +218,7 @@ public class TNTListener implements Listener {
             return;
         }
         PersistentDataContainer data = itemStack.getItemMeta().getPersistentDataContainer();
-        String tntType = data.get(new NamespacedKey(plugin, "TNTType"), PersistentDataType.STRING);
+        String tntType = data.get(plugin.getTntManager().getTntTypeKey(), PersistentDataType.STRING);
         if (tntType == null) {
             return;
         }

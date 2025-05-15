@@ -7,6 +7,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suncore.api.items.ItemBuilder;
 import ru.loper.suntnt.SunTNT;
@@ -31,7 +33,7 @@ public class CustomTNT {
     private final long iceDelay;
     private final ItemBuilder tntBuilder;
 
-    public CustomTNT(CustomConfig tntConfig) {
+    public CustomTNT(CustomConfig tntConfig, TNTManager tntManager) {
         FileConfiguration config = tntConfig.getConfig();
 
         name = config.getString("name", "default");
@@ -53,6 +55,10 @@ public class CustomTNT {
         } else {
             tntBuilder = ItemBuilder.fromConfig(builderSection);
         }
+
+        ItemMeta meta = tntBuilder.meta();
+        meta.getPersistentDataContainer().set(tntManager.getTntTypeKey(), PersistentDataType.STRING, name);
+        tntBuilder.meta(meta);
 
         ConfigurationSection recipeSection = config.getConfigurationSection("recipe");
         if (recipeSection != null) {
@@ -97,6 +103,6 @@ public class CustomTNT {
     }
 
     public ItemStack getItemStack() {
-        return tntBuilder.build().clone();
+        return tntBuilder.amount(1).build().clone();
     }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import ru.loper.suncore.api.command.SubCommand;
 import ru.loper.suncore.api.items.ItemBuilder;
 import ru.loper.suncore.utils.Colorize;
@@ -40,7 +41,10 @@ public class GiveArgument implements SubCommand {
 
         ItemBuilder itemBuilder = customTNT.getTntBuilder();
 
-        player.getInventory().addItem(itemBuilder.amount(amount).build());
+        ItemStack item = itemBuilder.build();
+        item.setAmount(amount);
+
+        player.getInventory().addItem(item);
         sender.sendMessage(Colorize.parse(String.format(
                 "&a ▶ &fВыдан динамит &e%s &fигроку &e%s",
                 itemBuilder.name(), player.getName()
