@@ -7,6 +7,9 @@ depend:
   - SunCore
 softdepend:
   - SunProtectionStones
+  - WorldGuard
+  - HolyLiteUtils
+
 commands:
   suntnt:
     aliases:

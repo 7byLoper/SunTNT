@@ -7,6 +7,8 @@ target/
 # gitignore file
 .gitignore
 # jar file ignore
-SunTNT.jar
+*.jar
 # class files ignore
 *.class
+# premium libs
+libs/

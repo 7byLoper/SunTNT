@@ -1,9 +1,11 @@
-package ru.loper.suntnt.tnt;
+package ru.loper.suntnt.manager;
 
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suntnt.SunTNT;
+import ru.loper.suntnt.api.modules.CustomTNT;
 import ru.loper.suntnt.utils.Utils;
 
 import java.io.File;
@@ -42,6 +44,14 @@ public class TNTManager {
 
     public CustomTNT getCustomTNT(String name) {
         return customTNTS.get(name);
+    }
+
+    public CustomTNT getCustomTNT(Entity entity) {
+        if (!entity.hasMetadata("TNTType")) {
+            return null;
+        }
+        String tntType = entity.getMetadata("TNTType").get(0).asString();
+        return customTNTS.get(tntType);
     }
 
     public List<String> getCustomTNTsName() {

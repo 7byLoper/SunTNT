@@ -3,13 +3,13 @@ package ru.loper.suntnt.commands;
 import org.bukkit.permissions.Permission;
 import ru.loper.suncore.api.command.AdvancedSmartCommandExecutor;
 import ru.loper.suntnt.SunTNT;
-import ru.loper.suntnt.commands.arguments.CustomItemsArgument;
-import ru.loper.suntnt.commands.arguments.GiveArgument;
-import ru.loper.suntnt.utils.PluginConfigManager;
+import ru.loper.suntnt.commands.impl.CustomItemsArgument;
+import ru.loper.suntnt.commands.impl.GiveArgument;
+import ru.loper.suntnt.config.TNTConfigManager;
 
 public class TNTCommand extends AdvancedSmartCommandExecutor {
 
-    private final PluginConfigManager configManager;
+    private final TNTConfigManager configManager;
 
     public TNTCommand(SunTNT plugin) {
         configManager = plugin.getConfigManager();
@@ -19,6 +19,6 @@ public class TNTCommand extends AdvancedSmartCommandExecutor {
 
     @Override
     public String getDontPermissionMessage() {
-        return configManager.getNoPermissions();
+        return configManager.getNoPermissionsMessage();
     }
 }

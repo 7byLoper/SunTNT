@@ -1,4 +1,4 @@
-package ru.loper.suntnt.commands.arguments;
+package ru.loper.suntnt.commands.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemStack;
 import ru.loper.suncore.api.command.SubCommand;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suncore.utils.Colorize;
-import ru.loper.suntnt.utils.PluginConfigManager;
+import ru.loper.suntnt.config.TNTConfigManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class CustomItemsArgument implements SubCommand {
-    private final PluginConfigManager configManager;
+    private final TNTConfigManager configManager;
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {

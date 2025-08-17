@@ -1,4 +1,4 @@
-package ru.loper.suntnt.tnt;
+package ru.loper.suntnt.api.modules;
 
 import lombok.Getter;
 import org.bukkit.Material;
@@ -11,7 +11,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suncore.api.items.ItemBuilder;
+import ru.loper.suncore.utils.Colorize;
 import ru.loper.suntnt.SunTNT;
+import ru.loper.suntnt.manager.TNTManager;
 import ru.loper.suntnt.utils.Utils;
 
 @Getter
@@ -21,6 +23,7 @@ public class CustomTNT {
     private final int explosionRadius;
     private final int obsidianChance;
     private final int spawnerChance;
+    private final int goldSpawnerChance;
     private final int blocksRadius;
     private final int liquidChance;
     private final int fuseTicks;
@@ -31,6 +34,10 @@ public class CustomTNT {
     private final boolean ice;
 
     private final long iceDelay;
+
+    private final boolean customNameVisible;
+    private final String customName;
+
     private final ItemBuilder tntBuilder;
 
     public CustomTNT(CustomConfig tntConfig, TNTManager tntManager) {
@@ -40,6 +47,7 @@ public class CustomTNT {
         obsidianChance = config.getInt("obsidian-chance", 0);
         liquidChance = config.getInt("liquid-chance", 0);
         spawnerChance = config.getInt("spawner-chance", 0);
+        goldSpawnerChance = config.getInt("gold-spawner-chance", 0);
         spawnerAlwaysSaveMob = config.getBoolean("spawner-always-save-mob", false);
         explosionRadius = config.getInt("explosion-radius", 5);
         fuseTicks = config.getInt("fuse-ticks", 100);
@@ -60,45 +68,58 @@ public class CustomTNT {
         meta.getPersistentDataContainer().set(tntManager.getTntTypeKey(), PersistentDataType.STRING, name);
         tntBuilder.meta(meta);
 
+        ConfigurationSection customNameSection = config.getConfigurationSection("custom_name");
+        if (customNameSection != null) {
+            customNameVisible = customNameSection.getBoolean("visible", false);
+            customName = Colorize.parse(customNameSection.getString("name"));
+        } else {
+            customNameVisible = false;
+            customName = "";
+        }
+
         ConfigurationSection recipeSection = config.getConfigurationSection("recipe");
         if (recipeSection != null) {
-            String[] value = recipeSection.getString("shape", "").split(":");
-            if (value.length != 3) {
-                SunTNT.getInstance().getLogger().severe("Ошибка при загрузки крафта для " + name);
-                return;
-            }
+            registerRecipe(recipeSection);
+        }
+    }
 
-            ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(SunTNT.getInstance(), name), getItemStack());
-            recipe.shape(value[0], value[1], value[2]);
+    private void registerRecipe(ConfigurationSection recipeSection) {
+        String[] value = recipeSection.getString("shape", "").split(":");
+        if (value.length != 3) {
+            SunTNT.getInstance().getLogger().severe("Ошибка при загрузки крафта для " + name);
+            return;
+        }
 
-            ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
-            if (ingredientsSection == null) {
-                SunTNT.getInstance().getLogger().severe("Ошибка при загрузки крафта для " + name + ", отсутствуют ингредиенты");
-                return;
-            }
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(SunTNT.getInstance(), name), getItemStack());
+        recipe.shape(value[0], value[1], value[2]);
 
-            for (String key : ingredientsSection.getKeys(false)) {
-                String shape = ingredientsSection.getString(key);
-                if (shape == null) continue;
+        ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
+        if (ingredientsSection == null) {
+            SunTNT.getInstance().getLogger().severe("Ошибка при загрузки крафта для " + name + ", отсутствуют ингредиенты");
+            return;
+        }
 
-                if (shape.toLowerCase().startsWith("customitem:")) {
-                    ItemStack item = Utils.getCustomItem(shape.replace("customitem:", ""));
-                    if (item == null) continue;
-                    recipe.setIngredient(key.charAt(0), item);
-                    continue;
-                }
-                try {
-                    Material material = Material.valueOf(shape.toUpperCase());
-                    recipe.setIngredient(key.charAt(0), material);
-                } catch (IllegalArgumentException e) {
-                    SunTNT.getInstance().getLogger().severe("Неизвестный материал - " + shape);
-                }
+        for (String key : ingredientsSection.getKeys(false)) {
+            String shape = ingredientsSection.getString(key);
+            if (shape == null) continue;
+
+            if (shape.toLowerCase().startsWith("customitem:")) {
+                ItemStack item = Utils.getCustomItem(shape.replace("customitem:", ""));
+                if (item == null) continue;
+                recipe.setIngredient(key.charAt(0), item);
+                continue;
             }
             try {
-                SunTNT.getInstance().getServer().addRecipe(recipe);
-            } catch (IllegalStateException e) {
-                SunTNT.getInstance().getLogger().severe("Не удалось зарегистрировать крафт динамита " + name);
+                Material material = Material.valueOf(shape.toUpperCase());
+                recipe.setIngredient(key.charAt(0), material);
+            } catch (IllegalArgumentException e) {
+                SunTNT.getInstance().getLogger().severe("Неизвестный материал - " + shape);
             }
+        }
+        try {
+            SunTNT.getInstance().getServer().addRecipe(recipe);
+        } catch (IllegalStateException e) {
+            SunTNT.getInstance().getLogger().severe("Не удалось зарегистрировать крафт динамита " + name);
         }
     }
 

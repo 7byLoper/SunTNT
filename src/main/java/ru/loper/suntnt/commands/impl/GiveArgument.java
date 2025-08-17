@@ -1,4 +1,4 @@
-package ru.loper.suntnt.commands.arguments;
+package ru.loper.suntnt.commands.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
@@ -8,8 +8,8 @@ import org.bukkit.inventory.ItemStack;
 import ru.loper.suncore.api.command.SubCommand;
 import ru.loper.suncore.api.items.ItemBuilder;
 import ru.loper.suncore.utils.Colorize;
-import ru.loper.suntnt.tnt.CustomTNT;
-import ru.loper.suntnt.tnt.TNTManager;
+import ru.loper.suntnt.api.modules.CustomTNT;
+import ru.loper.suntnt.manager.TNTManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class GiveArgument implements SubCommand {
     }
 
     private Player resolveTargetPlayer(CommandSender sender, String[] args) {
-        if (args.length < 2) {
+        if (args.length < 3) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(Colorize.parse("&cДанная команда доступна только игрокам"));
                 return null;

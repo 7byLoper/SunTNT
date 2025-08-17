@@ -8,4 +8,15 @@ messages:
   error-item: '&d ▶ &fПредемет не должен быть воздухом'
   offline-target: '&d ▶ &fДанный игрока сейчас не в сети'
   invalid-tnt: '&d ▶ &fДанного динамита не существует'
+
   no-permissions: '&d ▶ &fУ вас недостаточно прав'
+
+settings:
+  # Отключает взрыв предметов
+  disable_item_explosion: true
+  # Отключает взрыв спавнеров
+  disable_spawner_explosion: true
+
+  default_custom_name:
+    visible: true
+    name: '&7Динамит'

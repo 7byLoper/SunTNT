@@ -8,6 +8,10 @@ fuse-ticks: 200
 blocks-radius: 0
 ice: false
 
+custom_name:
+  visible: true
+  name: '&#a8ebfcДинамит A'
+
 item:
   material: TNT
   display_name: '&#a8ebfcДинамит A'
