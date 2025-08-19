@@ -8,8 +8,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Dispenser;
-import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TNTPrimed;
@@ -20,14 +18,15 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.api.modules.CustomTNT;
+import ru.loper.suntnt.api.modules.TNTGunProjectile;
 import ru.loper.suntnt.config.TNTConfigManager;
+import ru.loper.suntnt.utils.Utils;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -39,6 +38,12 @@ public class TNTSpawnListener implements Listener {
     private final TNTConfigManager configManager;
 
     private final Cache<Block, CustomTNT> cachedTNTs = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+    private final Cache<Block, TNTGunProjectile> cachedGunProjectiles = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+
+    private static void setTntCustomName(TNTPrimed tntPrimed, String customTnt) {
+        tntPrimed.setCustomName(customTnt);
+        tntPrimed.setCustomNameVisible(true);
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onTNTPlace(BlockPlaceEvent event) {
@@ -84,6 +89,11 @@ public class TNTSpawnListener implements Listener {
             return;
         }
 
+        Location dropLocation = Utils.getDispenserLocation(block);
+        if (block.hasMetadata("TNTGun")) {
+            cachedGunProjectiles.put(dropLocation.getBlock(), new TNTGunProjectile(block));
+        }
+
         PersistentDataContainer data = itemStack.getItemMeta().getPersistentDataContainer();
         String tntType = data.get(plugin.getTntManager().getTntTypeKey(), PersistentDataType.STRING);
         if (tntType == null) {
@@ -95,7 +105,6 @@ public class TNTSpawnListener implements Listener {
             return;
         }
 
-        Location dropLocation = getDispenserLocation(block);
         cachedTNTs.put(dropLocation.getBlock(), customTNT);
     }
 
@@ -107,6 +116,17 @@ public class TNTSpawnListener implements Listener {
         }
 
         Block block = event.getLocation().getBlock();
+        handleTNTPossibility(tntPrimed, block, entity);
+
+        TNTGunProjectile tntGunProjectile = cachedGunProjectiles.getIfPresent(block);
+        if (tntGunProjectile != null) {
+            tntGunProjectile.setTntPrimed(tntPrimed);
+            cachedGunProjectiles.invalidate(block);
+            SunTNT.handleTNTGun(tntGunProjectile);
+        }
+    }
+
+    private void handleTNTPossibility(TNTPrimed tntPrimed, Block block, Entity entity) {
         CustomTNT customTnt = cachedTNTs.getIfPresent(block);
 
         if (customTnt == null) {
@@ -124,11 +144,6 @@ public class TNTSpawnListener implements Listener {
         }
 
         entity.setMetadata("TNTType", new FixedMetadataValue(plugin, customTnt.getName()));
-    }
-
-    private static void setTntCustomName(TNTPrimed tntPrimed, String customTnt) {
-        tntPrimed.setCustomName(customTnt);
-        tntPrimed.setCustomNameVisible(true);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -151,9 +166,8 @@ public class TNTSpawnListener implements Listener {
         event.setRadius(customTnt.getExplosionRadius());
     }
 
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onBreak(BlockBreakEvent event) {
+    public void onTNTBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         if (!block.getType().equals(Material.TNT)) {
             return;
@@ -215,22 +229,5 @@ public class TNTSpawnListener implements Listener {
             Block nextBlock = block.getRelative(direction, 1);
             nextBlock.setMetadata("TNTType", new FixedMetadataValue(plugin, tntType));
         }
-    }
-
-    private Location getDispenserLocation(Block dispenser) {
-        Directional directional = (Directional) dispenser.getBlockData();
-        BlockFace face = directional.getFacing();
-        return dispenser.getLocation().add(0.5 + face.getModX() * 0.7,
-                0.5 + face.getModY() * 0.7,
-                0.5 + face.getModZ() * 0.7);
-    }
-
-    public Inventory getInventoryFromDispencer(Location location) {
-        Block block = location.getBlock();
-        if (block.getState() instanceof Dispenser dispenser) {
-            return dispenser.getInventory();
-        }
-
-        return null;
     }
 }

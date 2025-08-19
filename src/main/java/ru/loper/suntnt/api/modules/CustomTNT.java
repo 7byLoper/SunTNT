@@ -23,13 +23,13 @@ public class CustomTNT {
     private final int explosionRadius;
     private final int obsidianChance;
     private final int spawnerChance;
+    private final int spawnerMobSaveChance;
     private final int goldSpawnerChance;
     private final int blocksRadius;
     private final int liquidChance;
     private final int fuseTicks;
     private final int iceRadius;
 
-    private final boolean spawnerAlwaysSaveMob;
     private final boolean breakPSRegion;
     private final boolean ice;
 
@@ -47,8 +47,8 @@ public class CustomTNT {
         obsidianChance = config.getInt("obsidian-chance", 0);
         liquidChance = config.getInt("liquid-chance", 0);
         spawnerChance = config.getInt("spawner-chance", 0);
+        spawnerMobSaveChance = config.getInt("spawner-mob-save-chance", 0);
         goldSpawnerChance = config.getInt("gold-spawner-chance", 0);
-        spawnerAlwaysSaveMob = config.getBoolean("spawner-always-save-mob", false);
         explosionRadius = config.getInt("explosion-radius", 5);
         fuseTicks = config.getInt("fuse-ticks", 100);
         blocksRadius = config.getInt("blocks-radius", 4);

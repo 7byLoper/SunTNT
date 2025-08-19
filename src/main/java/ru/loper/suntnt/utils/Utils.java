@@ -1,6 +1,10 @@
 package ru.loper.suntnt.utils;
 
 import lombok.experimental.UtilityClass;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.ItemStack;
 import ru.loper.suntnt.SunTNT;
 
@@ -30,5 +34,13 @@ public class Utils {
             return item.clone();
         }
         return null;
+    }
+
+    public static Location getDispenserLocation(Block dispenser) {
+        Directional directional = (Directional) dispenser.getBlockData();
+        BlockFace face = directional.getFacing();
+        return dispenser.getLocation().add(0.5 + face.getModX() * 0.7,
+                0.5 + face.getModY() * 0.7,
+                0.5 + face.getModZ() * 0.7);
     }
 }

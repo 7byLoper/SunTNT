@@ -1,8 +1,8 @@
 name: 'SPAWNER'
 obsidian-chance: 0
 liquid-chance: 0
-spawner-chance: 75
-spawner-always-save-mob: true
+spawner-chance: 100
+spawner-mob-save-chance: 75
 explosion-radius: 4
 fuse-ticks: 100
 blocks-radius: 0

@@ -35,21 +35,18 @@ import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class TNTPossibilityListener implements Listener {
-    private final SunTNT plugin;
-    private final TNTConfigManager configManager;
-
-    private final Cache<Location, Integer> waterBlocks = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
-
     private static final Set<Material> PROTECTED_BLOCKS = EnumSet.of(
             Material.BEDROCK, Material.BARRIER, Material.COMMAND_BLOCK,
             Material.END_PORTAL_FRAME, Material.END_PORTAL, Material.ANCIENT_DEBRIS,
             Material.NETHERITE_BLOCK, Material.OBSIDIAN, Material.CRYING_OBSIDIAN
     );
-
     private static final Set<Material> OBSIDIAN_TYPE_BLOCKS = EnumSet.of(
             Material.OBSIDIAN, Material.CRYING_OBSIDIAN, Material.ANCIENT_DEBRIS,
             Material.NETHERITE_BLOCK, Material.ENDER_CHEST, Material.ENCHANTING_TABLE
     );
+    private final SunTNT plugin;
+    private final TNTConfigManager configManager;
+    private final Cache<Location, Integer> waterBlocks = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.MINUTES).build();
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
@@ -131,7 +128,7 @@ public class TNTPossibilityListener implements Listener {
 
     private void handleSpawnerTnt(EntityExplodeEvent event, CustomTNT customTnt) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        if (random.nextInt(0, 101) > customTnt.getSpawnerChance()) return;
+        if (random.nextInt(0, 100) > customTnt.getSpawnerChance()) return;
 
         for (Block block : event.blockList()) {
             if (!block.getType().equals(Material.SPAWNER)) continue;
@@ -154,7 +151,7 @@ public class TNTPossibilityListener implements Listener {
                 goldSpawnerManager.removeSpawner(goldSpawnerLocation);
                 GoldSpawnerListener.stopSpawnerTask(goldSpawnerLocation);
 
-                if (random.nextInt(0, 101) <= customTnt.getGoldSpawnerChance()) {
+                if (random.nextInt(0, 100) <= customTnt.getGoldSpawnerChance()) {
                     ItemBuilder dropBuilder = SpawnerItem.getSpawnerItem();
                     if (dropBuilder != null) {
                         return dropBuilder.build();
@@ -163,7 +160,7 @@ public class TNTPossibilityListener implements Listener {
             }
         }
 
-        if (random.nextInt(0, 101) <= customTnt.getSpawnerChance() || customTnt.isSpawnerAlwaysSaveMob()) {
+        if (random.nextInt(0, 100) <= customTnt.getSpawnerMobSaveChance()) {
             CreatureSpawner creatureSpawner = (CreatureSpawner) block.getState();
             EntityType entityType = creatureSpawner.getSpawnedType();
             return createSpawnerItemStack(entityType);
@@ -181,6 +178,7 @@ public class TNTPossibilityListener implements Listener {
         CreatureSpawner spawner = (CreatureSpawner) blockStateMeta.getBlockState();
         spawner.setSpawnedType(entityType);
         blockStateMeta.setBlockState(spawner);
+        blockStateMeta.setDisplayName(configManager.getEntityTranslation(entityType));
         spawnerItem.setItemMeta(blockStateMeta);
         return spawnerItem;
     }
