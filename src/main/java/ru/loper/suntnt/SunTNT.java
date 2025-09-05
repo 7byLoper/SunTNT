@@ -19,6 +19,7 @@ import ru.loper.suntnt.listeners.TNTGunListener;
 import ru.loper.suntnt.listeners.TNTPossibilityListener;
 import ru.loper.suntnt.listeners.TNTSpawnListener;
 import ru.loper.suntnt.manager.TNTManager;
+import ru.loper.suntnt.utils.FlagHandler;
 import ru.loper.suntnt.utils.Utils;
 
 import java.util.Optional;
@@ -34,6 +35,11 @@ public final class SunTNT extends JavaPlugin {
 
     private boolean protectionStonesStatus = true;
     private boolean holyLiteUtilsStatus = true;
+
+    @Override
+    public void onLoad() {
+        FlagHandler.registerFlags();
+    }
 
     @Override
     public void onEnable() {

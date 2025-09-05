@@ -2,6 +2,10 @@ package ru.loper.suntnt.listeners;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -28,6 +32,7 @@ import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.api.hook.WorldGuardHook;
 import ru.loper.suntnt.api.modules.CustomTNT;
 import ru.loper.suntnt.config.TNTConfigManager;
+import ru.loper.suntnt.utils.FlagHandler;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -51,12 +56,50 @@ public class TNTPossibilityListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         Entity entity = event.getEntity();
-
         CustomTNT customTnt = plugin.getTntManager().getCustomTNT(entity);
-        if (customTnt == null) {
-            removeSpawnersExplosion(event);
+
+        if (handleWorldGuardFlags(event)) {
             return;
         }
+
+        if (customTnt == null) {
+            removeSpawnersExplosion(event);
+            handleProtectionStonesDefault(event);
+            return;
+        }
+
+        handleCustomTNT(event, customTnt);
+    }
+
+    private boolean handleWorldGuardFlags(EntityExplodeEvent event) {
+        Iterator<Block> iterator = event.blockList().iterator();
+        while (iterator.hasNext()) {
+            Block block = iterator.next();
+
+            com.sk89q.worldedit.util.Location blockLocation = BukkitAdapter.adapt(block.getLocation());
+            ApplicableRegionSet blockRegions = WorldGuard.getInstance().getPlatform()
+                    .getRegionContainer()
+                    .createQuery()
+                    .getApplicableRegions(blockLocation);
+
+            if (blockRegions.queryState(null, FlagHandler.CANCEL_NEARBY_EXPLOSION) == StateFlag.State.ALLOW) {
+                event.setCancelled(true);
+                return true;
+            }
+
+            if (blockRegions.queryState(null, FlagHandler.TNT_BLOCK_EXPLOSION) == StateFlag.State.DENY) {
+                iterator.remove();
+            }
+        }
+
+        return false;
+    }
+
+    private void handleCustomTNT(EntityExplodeEvent event, CustomTNT customTnt) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        Entity entity = event.getEntity();
+        Location location = entity.getLocation();
 
         if (customTnt.getSpawnerChance() > 0) {
             handleSpawnerTnt(event, customTnt);
@@ -65,7 +108,10 @@ public class TNTPossibilityListener implements Listener {
             removeSpawnersExplosion(event);
         }
 
-        Location location = entity.getLocation();
+        if (entity.isInWater() && random.nextInt(0, 100) > customTnt.getWaterChance()) {
+            event.blockList().clear();
+            return;
+        }
 
         if (customTnt.getObsidianChance() > 0) {
             event.blockList().addAll(
@@ -88,42 +134,72 @@ public class TNTPossibilityListener implements Listener {
         }
 
         if (customTnt.getBlocksRadius() > 0) {
+            List<Block> nearbyBlocks = getNearbyBlocks(location, customTnt.getBlocksRadius());
             event.blockList().addAll(
-                    getNearbyBlocks(location, customTnt.getBlocksRadius())
-                            .stream()
-                            .filter(block -> !block.getType().isAir() && !PROTECTED_BLOCKS.contains(block.getType()) && !WorldGuardHook.hasRegionAtLocation(block.getLocation()))
+                    nearbyBlocks.stream()
+                            .filter(block -> !block.getType().isAir() &&
+                                             !PROTECTED_BLOCKS.contains(block.getType()) &&
+                                             !WorldGuardHook.hasRegionAtLocation(block.getLocation()))
                             .toList()
             );
         }
 
         if (customTnt.isIce()) {
-            createIceSphere(entity.getLocation(), customTnt.getIceRadius(), customTnt.getIceDelay());
+            createIceSphere(location, customTnt.getIceRadius(), customTnt.getIceDelay());
         }
 
         if (customTnt.isBreakPSRegion() && SunTNT.getInstance().isProtectionStonesStatus()) {
-            Iterator<Block> iterator = event.blockList().iterator();
+            handleProtectionStones(event, customTnt);
+        }
+    }
 
-            while (iterator.hasNext()) {
-                Block block = iterator.next();
+    private void handleProtectionStones(EntityExplodeEvent event, CustomTNT customTNT) {
+        Iterator<Block> iterator = event.blockList().iterator();
+        while (iterator.hasNext()) {
+            Block block = iterator.next();
 
-                if (!SunProtectionStones.isProtectBlock(block)) {
-                    continue;
-                }
-
-                PSRegion region = PSRegion.fromLocation(block.getLocation());
-                if (region == null) {
-                    continue;
-                }
-
-                region.removeStrength(1);
-                iterator.remove();
+            if (!SunProtectionStones.isProtectBlock(block)) {
+                continue;
             }
+
+            PSRegion region = PSRegion.fromLocation(block.getLocation());
+            if (region == null) {
+                continue;
+            }
+
+            if (customTNT.isBreakPSRegion()) {
+                region.removeStrength(1);
+            }
+
+            iterator.remove();
         }
     }
 
     private void removeSpawnersExplosion(EntityExplodeEvent event) {
         if (!configManager.isDisableSpawnerExplosion()) return;
         event.blockList().removeIf(block -> block.getType().equals(Material.SPAWNER));
+    }
+
+    private void handleProtectionStonesDefault(EntityExplodeEvent event) {
+        Iterator<Block> iterator = event.blockList().iterator();
+        while (iterator.hasNext()) {
+            Block block = iterator.next();
+
+            if (!SunProtectionStones.isProtectBlock(block)) {
+                continue;
+            }
+
+            PSRegion region = PSRegion.fromLocation(block.getLocation());
+            if (region == null) {
+                continue;
+            }
+
+            if (!configManager.isDisableProtectionBlocksExplosion()) {
+                region.removeStrength(1);
+            }
+
+            iterator.remove();
+        }
     }
 
     private void handleSpawnerTnt(EntityExplodeEvent event, CustomTNT customTnt) {
@@ -175,6 +251,7 @@ public class TNTPossibilityListener implements Listener {
         if (blockStateMeta == null) {
             return null;
         }
+
         CreatureSpawner spawner = (CreatureSpawner) blockStateMeta.getBlockState();
         spawner.setSpawnedType(entityType);
         blockStateMeta.setBlockState(spawner);

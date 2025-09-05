@@ -30,6 +30,7 @@ public class TNTConfigManager extends ConfigManager {
 
     private boolean disableItemExplosion;
     private boolean disableSpawnerExplosion;
+    private boolean disableProtectionBlocksExplosion;
 
     private boolean defaultCustomNameVisible;
     private String defaultCustomName;
@@ -83,11 +84,13 @@ public class TNTConfigManager extends ConfigManager {
         if (settingsSection != null) {
             disableItemExplosion = settingsSection.getBoolean("disable_item_explosion", false);
             disableSpawnerExplosion = settingsSection.getBoolean("disable_spawner_explosion", false);
+            disableProtectionBlocksExplosion = settingsSection.getBoolean("disable_protection_blocks_explosion", false);
             defaultCustomNameVisible = settingsSection.getBoolean("default_custom_name.visible", false);
             defaultCustomName = Colorize.parse(settingsSection.getString("default_custom_name.name", ""));
         } else {
             disableItemExplosion = false;
             defaultCustomNameVisible = false;
+            disableProtectionBlocksExplosion = false;
             defaultCustomName = "";
         }
 

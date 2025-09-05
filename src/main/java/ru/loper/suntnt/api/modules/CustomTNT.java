@@ -29,6 +29,7 @@ public class CustomTNT {
     private final int liquidChance;
     private final int fuseTicks;
     private final int iceRadius;
+    private final int waterChance;
 
     private final boolean breakPSRegion;
     private final boolean ice;
@@ -54,6 +55,7 @@ public class CustomTNT {
         blocksRadius = config.getInt("blocks-radius", 4);
         ice = config.getBoolean("ice", false);
         iceRadius = config.getInt("ice-radius", 0);
+        waterChance = config.getInt("water-chance", 0);
         iceDelay = config.getInt("ice-delay", 0);
         breakPSRegion = config.getBoolean("break-ps-region", false);
 
