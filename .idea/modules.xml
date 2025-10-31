@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SunTNT.iml" filepath="$PROJECT_DIR$/SunTNT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SunTNT.iml" filepath="$PROJECT_DIR$/.idea/SunTNT.iml" />
     </modules>
   </component>
 </project>

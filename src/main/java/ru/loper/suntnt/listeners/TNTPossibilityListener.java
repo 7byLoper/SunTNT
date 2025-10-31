@@ -6,6 +6,8 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import dev.espi.protectionstones.PSRegion;
+import dev.espi.protectionstones.ProtectionStones;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -21,13 +23,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import ru.loper.liteutils.HolyLiteUtils;
-import ru.loper.liteutils.api.goldspawner.data.GoldSpawnerManager;
-import ru.loper.liteutils.api.goldspawner.listeners.GoldSpawnerListener;
-import ru.loper.liteutils.item.SpawnerItem;
 import ru.loper.suncore.api.items.ItemBuilder;
-import ru.loper.sunprotectionstones.PSRegion;
-import ru.loper.sunprotectionstones.SunProtectionStones;
+import ru.loper.sunholyitems.SunHolyItems;
+import ru.loper.sunholyitems.api.modules.blocks.impl.GoldSpawner;
+import ru.loper.sunholyitems.manager.GoldSpawnerManager;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.api.hook.WorldGuardHook;
 import ru.loper.suntnt.api.modules.CustomTNT;
@@ -47,7 +46,7 @@ public class TNTPossibilityListener implements Listener {
     );
     private static final Set<Material> OBSIDIAN_TYPE_BLOCKS = EnumSet.of(
             Material.OBSIDIAN, Material.CRYING_OBSIDIAN, Material.ANCIENT_DEBRIS,
-            Material.NETHERITE_BLOCK, Material.ENDER_CHEST, Material.ENCHANTING_TABLE
+            Material.NETHERITE_BLOCK, Material.ENDER_CHEST, Material.ENCHANTING_TABLE, Material.RESPAWN_ANCHOR
     );
     private final SunTNT plugin;
     private final TNTConfigManager configManager;
@@ -63,8 +62,10 @@ public class TNTPossibilityListener implements Listener {
         }
 
         if (customTnt == null) {
+            if (plugin.isProtectionStonesStatus()) {
+                handleProtectionStonesDefault(event);
+            }
             removeSpawnersExplosion(event);
-            handleProtectionStonesDefault(event);
             return;
         }
 
@@ -148,7 +149,7 @@ public class TNTPossibilityListener implements Listener {
             createIceSphere(location, customTnt.getIceRadius(), customTnt.getIceDelay());
         }
 
-        if (customTnt.isBreakPSRegion() && SunTNT.getInstance().isProtectionStonesStatus()) {
+        if (plugin.isProtectionStonesStatus()) {
             handleProtectionStones(event, customTnt);
         }
     }
@@ -158,7 +159,7 @@ public class TNTPossibilityListener implements Listener {
         while (iterator.hasNext()) {
             Block block = iterator.next();
 
-            if (!SunProtectionStones.isProtectBlock(block)) {
+            if (!ProtectionStones.isProtectBlock(block)) {
                 continue;
             }
 
@@ -185,7 +186,7 @@ public class TNTPossibilityListener implements Listener {
         while (iterator.hasNext()) {
             Block block = iterator.next();
 
-            if (!SunProtectionStones.isProtectBlock(block)) {
+            if (!ProtectionStones.isProtectBlock(block)) {
                 continue;
             }
 
@@ -219,16 +220,15 @@ public class TNTPossibilityListener implements Listener {
     }
 
     private ItemStack getSpawner(CustomTNT customTnt, Block block, ThreadLocalRandom random) {
-        if (plugin.isHolyLiteUtilsStatus()) {
-            GoldSpawnerManager goldSpawnerManager = HolyLiteUtils.getInstance().getGoldSpawnerManager();
-            Location goldSpawnerLocation = block.getLocation().add(0.5D, 0.5D, 0.5D);
+        if (plugin.isHolyItemsStatus()) {
+            GoldSpawnerManager goldSpawnerManager = SunHolyItems.getInstance().getGoldSpawnerManager();
+            GoldSpawner goldSpawner = goldSpawnerManager.getSpawner(block.getLocation());
 
-            if (goldSpawnerManager.contains(goldSpawnerLocation)) {
-                goldSpawnerManager.removeSpawner(goldSpawnerLocation);
-                GoldSpawnerListener.stopSpawnerTask(goldSpawnerLocation);
+            if (goldSpawner != null) {
+                goldSpawnerManager.removeSpawner(block.getLocation());
 
                 if (random.nextInt(0, 100) <= customTnt.getGoldSpawnerChance()) {
-                    ItemBuilder dropBuilder = SpawnerItem.getSpawnerItem();
+                    ItemBuilder dropBuilder = goldSpawner.getItemBuilder();
                     if (dropBuilder != null) {
                         return dropBuilder.build();
                     }

@@ -47,6 +47,11 @@
       <option name="url" value="https://maven.enginehub.org/repo/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="local-repo" />
+      <option name="name" value="local-repo" />
+      <option name="url" value="file:C:\Users\ImLoper\Desktop\projects\java\SunTNT/libs" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="sk89q-repo" />
       <option name="name" value="sk89q-repo" />
       <option name="url" value="https://maven.enginehub.org/repo/" />

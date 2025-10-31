@@ -94,12 +94,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>ru.loper.sunprotectionstones</groupId>
-            <artifactId>sunprotectionstones</artifactId>
+            <groupId>dev.espi</groupId>
+            <artifactId>ProtectionStones</artifactId>
+            <version>2.10.5-SUN-EDITION</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.loper</groupId>
+            <artifactId>SunHolyItems</artifactId>
             <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>C:/Users/Loper/Desktop/Loper pack/projects/java/SunProtectionStones/target/SunProtectionStones-1.0.0.jar
-            </systemPath>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -117,12 +121,6 @@
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-bukkit</artifactId>
             <version>7.2.17</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.loper</groupId>
-            <artifactId>HolyLiteUtils</artifactId>
-            <version>1.0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

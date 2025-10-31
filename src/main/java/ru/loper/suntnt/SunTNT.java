@@ -9,6 +9,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -34,37 +35,7 @@ public final class SunTNT extends JavaPlugin {
     private TNTConfigManager configManager;
 
     private boolean protectionStonesStatus = true;
-    private boolean holyLiteUtilsStatus = true;
-
-    @Override
-    public void onLoad() {
-        FlagHandler.registerFlags();
-    }
-
-    @Override
-    public void onEnable() {
-        instance = this;
-
-        if (Bukkit.getPluginManager().getPlugin("SunProtectionStones") == null) {
-            protectionStonesStatus = false;
-            getLogger().warning("SunProtectionStones отсутствует, некоторые функции плагина отключены. Приобрести плагина можно в нашей студии t.me/bySunDev");
-        }
-
-        if (Bukkit.getPluginManager().getPlugin("HolyLiteUtils") == null) {
-            holyLiteUtilsStatus = false;
-        }
-
-        configManager = new TNTConfigManager(this);
-        tntManager = new TNTManager(this);
-
-        Bukkit.getPluginManager().registerEvents(new TNTPossibilityListener(this, configManager), this);
-        Bukkit.getPluginManager().registerEvents(new TNTSpawnListener(this, configManager), this);
-        Bukkit.getPluginManager().registerEvents(new TNTGunListener(this, configManager), this);
-
-        Optional.ofNullable(getCommand("suntnt"))
-                .orElseThrow(() -> new IllegalStateException("Command 'suntnt' not found!"))
-                .setExecutor(new TNTCommand(this));
-    }
+    private boolean holyItemsStatus = true;
 
     public static void handleTNTGun(TNTGunProjectile tntGunProjectile) {
         TNTPrimed tntPrimed = tntGunProjectile.getTntPrimed();
@@ -101,5 +72,35 @@ public final class SunTNT extends JavaPlugin {
                 snowball.setVelocity(velocity);
             }
         }.runTaskTimerAsynchronously(instance, 5L, 5L);
+    }
+
+    @Override
+    public void onLoad() {
+        FlagHandler.registerFlags();
+    }
+
+    @Override
+    public void onEnable() {
+        instance = this;
+        Plugin protectionStones = Bukkit.getPluginManager().getPlugin("ProtectionStones");
+        if (protectionStones == null || !protectionStones.getDescription().getVersion().contains("SUN-EDITION")) {
+            protectionStonesStatus = false;
+            getLogger().warning("ProtectionStones (SUN) отсутствует, плагин не будет работать с регионами. Приобрести плагина можно в нашей студии t.me/bySunDev");
+        }
+
+        if (Bukkit.getPluginManager().getPlugin("SunHolyItems") == null) {
+            holyItemsStatus = false;
+        }
+
+        configManager = new TNTConfigManager(this);
+        tntManager = new TNTManager(this);
+
+        Bukkit.getPluginManager().registerEvents(new TNTPossibilityListener(this, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new TNTSpawnListener(this, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new TNTGunListener(this, configManager), this);
+
+        Optional.ofNullable(getCommand("suntnt"))
+                .orElseThrow(() -> new IllegalStateException("Command 'suntnt' not found!"))
+                .setExecutor(new TNTCommand(this));
     }
 }
