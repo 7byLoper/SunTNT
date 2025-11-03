@@ -13,9 +13,11 @@ spawner-chance: 30
 # Шанс сохранения моба в спавнере при выпадении в % (0-100)
 spawner-mob-save-chance: 50
 
-# Шанс выпадения золотого спавнера (из HolyLiteUtils) в % (0-100)
+# Шанс выпадения золотого спавнера (из SunHolyItems) в % (0-100)
 gold-spawner-chance: 10
 
+# Шанс выпадения загадочного спавнера (из SunMysteriousEggs) в % (0-100)
+mysterious-spawner-chance: 10
 # Радиус разрушения блоков вокруг взрыва (для квадратного взрыва)
 blocks-radius: 0
 

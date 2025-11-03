@@ -36,6 +36,7 @@ public final class SunTNT extends JavaPlugin {
 
     private boolean protectionStonesStatus = true;
     private boolean holyItemsStatus = true;
+    private boolean mysteriousEggsStatus = true;
 
     public static void handleTNTGun(TNTGunProjectile tntGunProjectile) {
         TNTPrimed tntPrimed = tntGunProjectile.getTntPrimed();
@@ -90,6 +91,10 @@ public final class SunTNT extends JavaPlugin {
 
         if (Bukkit.getPluginManager().getPlugin("SunHolyItems") == null) {
             holyItemsStatus = false;
+        }
+
+        if (Bukkit.getPluginManager().getPlugin("SunMysteriousEggs") == null) {
+            mysteriousEggsStatus = false;
         }
 
         configManager = new TNTConfigManager(this);

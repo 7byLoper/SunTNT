@@ -27,6 +27,9 @@ import ru.loper.suncore.api.items.ItemBuilder;
 import ru.loper.sunholyitems.SunHolyItems;
 import ru.loper.sunholyitems.api.modules.blocks.impl.GoldSpawner;
 import ru.loper.sunholyitems.manager.GoldSpawnerManager;
+import ru.loper.sunmysteriouseggs.SunMysteriousEggs;
+import ru.loper.sunmysteriouseggs.config.MysteriousEggConfig;
+import ru.loper.sunmysteriouseggs.manager.MysteriousSpawnerManager;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.api.hook.WorldGuardHook;
 import ru.loper.suntnt.api.modules.CustomTNT;
@@ -139,8 +142,8 @@ public class TNTPossibilityListener implements Listener {
             event.blockList().addAll(
                     nearbyBlocks.stream()
                             .filter(block -> !block.getType().isAir() &&
-                                             !PROTECTED_BLOCKS.contains(block.getType()) &&
-                                             !WorldGuardHook.hasRegionAtLocation(block.getLocation()))
+                                    !PROTECTED_BLOCKS.contains(block.getType()) &&
+                                    !WorldGuardHook.hasRegionAtLocation(block.getLocation()))
                             .toList()
             );
         }
@@ -229,6 +232,22 @@ public class TNTPossibilityListener implements Listener {
 
                 if (random.nextInt(0, 100) <= customTnt.getGoldSpawnerChance()) {
                     ItemBuilder dropBuilder = goldSpawner.getItemBuilder();
+                    if (dropBuilder != null) {
+                        return dropBuilder.build();
+                    }
+                }
+            }
+        }
+
+        if (plugin.isMysteriousEggsStatus()) {
+            MysteriousSpawnerManager spawnerManager = SunMysteriousEggs.getInstance().getSpawnerManager();
+            MysteriousEggConfig eggConfig = spawnerManager.getSpawner(block.getLocation());
+
+            if (eggConfig != null) {
+                spawnerManager.removeSpawner(block.getLocation());
+
+                if (random.nextInt(0, 100) <= customTnt.getMysteriousSpawnerChance()) {
+                    ItemBuilder dropBuilder = eggConfig.spawnerBuilder();
                     if (dropBuilder != null) {
                         return dropBuilder.build();
                     }

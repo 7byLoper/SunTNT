@@ -25,6 +25,7 @@ public class CustomTNT {
     private final int spawnerChance;
     private final int spawnerMobSaveChance;
     private final int goldSpawnerChance;
+    private final int mysteriousSpawnerChance;
     private final int blocksRadius;
     private final int liquidChance;
     private final int fuseTicks;
@@ -50,6 +51,7 @@ public class CustomTNT {
         spawnerChance = config.getInt("spawner-chance", 0);
         spawnerMobSaveChance = config.getInt("spawner-mob-save-chance", 0);
         goldSpawnerChance = config.getInt("gold-spawner-chance", 0);
+        mysteriousSpawnerChance = config.getInt("mysterious-spawner-chance", 0);
         explosionRadius = config.getInt("explosion-radius", 5);
         fuseTicks = config.getInt("fuse-ticks", 100);
         blocksRadius = config.getInt("blocks-radius", 4);
