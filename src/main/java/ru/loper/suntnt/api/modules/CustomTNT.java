@@ -1,5 +1,6 @@
 package ru.loper.suntnt.api.modules;
 
+import lombok.Data;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,7 +17,7 @@ import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.manager.TNTManager;
 import ru.loper.suntnt.utils.Utils;
 
-@Getter
+@Data
 public class CustomTNT {
     private final String name;
 
@@ -41,6 +42,7 @@ public class CustomTNT {
     private final String customName;
 
     private final ItemBuilder tntBuilder;
+    private final ItemBuilder spawnerForm;
 
     public CustomTNT(CustomConfig tntConfig, TNTManager tntManager) {
         FileConfiguration config = tntConfig.getConfig();
@@ -66,6 +68,13 @@ public class CustomTNT {
             tntBuilder = new ItemBuilder(Material.TNT);
         } else {
             tntBuilder = ItemBuilder.fromConfig(builderSection);
+        }
+
+        ConfigurationSection spawnerBuilderSection = config.getConfigurationSection("spawner_form");
+        if (builderSection == null) {
+            spawnerForm = new ItemBuilder(Material.SPAWNER).name("&f{mob}");
+        } else {
+            spawnerForm = ItemBuilder.fromConfig(spawnerBuilderSection);
         }
 
         ItemMeta meta = tntBuilder.meta();

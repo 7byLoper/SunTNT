@@ -15,7 +15,10 @@ import java.util.Set;
 @UtilityClass
 public class WorldGuardHook {
     public static boolean hasRegionAtLocation(Location location) {
-        if (!Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) return false;
+        if (!Bukkit.getPluginManager().isPluginEnabled("WorldGuard")){
+            return false;
+        }
+
         return !getRegionsAtLocation(location).isEmpty();
     }
 

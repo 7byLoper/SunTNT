@@ -14,6 +14,7 @@ import ru.loper.suncore.api.items.ItemBuilder;
 import ru.loper.suncore.utils.Colorize;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -42,6 +43,10 @@ public class TNTConfigManager extends ConfigManager {
     private boolean tntGunRegionBreak;
     private double tntGunSpeed;
 
+    private NamespacedKey blockedItemKey;
+    private List<Integer> tntGunBlockedSlots;
+    private ItemBuilder tntGunBlockedItem;
+
     public TNTConfigManager(Plugin plugin) {
         super(plugin);
     }
@@ -49,14 +54,17 @@ public class TNTConfigManager extends ConfigManager {
     @Override
     public void loadConfigs() {
         plugin.saveDefaultConfig();
+
         addCustomConfig(new CustomConfig("customItems", plugin));
         addCustomConfig(new CustomConfig("translation", plugin));
+
+        blockedItemKey = new NamespacedKey(plugin, "blocked-item");
+        tntGunNamespacedKey = new NamespacedKey(plugin, "tnt-gun");
     }
 
     @Override
     public void loadValues() {
         entityTranslations = new HashMap<>();
-        tntGunNamespacedKey = new NamespacedKey(plugin, "tnt-gun");
 
         ConfigurationSection entityTranslationsSection = getTranslationConfig().getConfig().getConfigurationSection("entities");
         if (entityTranslationsSection != null) {
@@ -102,11 +110,22 @@ public class TNTConfigManager extends ConfigManager {
             ConfigurationSection itemBuilderSection = tntGunSection.getConfigurationSection("item");
             tntGunBuilder = itemBuilderSection == null ? new ItemBuilder(Material.DISPENSER) : ItemBuilder.fromConfig(itemBuilderSection);
             tntGunBuilder.namespacedKey(tntGunNamespacedKey, PersistentDataType.STRING, "value");
+
+            ConfigurationSection tntGunBlockedItemSection = tntGunSection.getConfigurationSection("blocked_item");
+            tntGunBlockedItem = tntGunBlockedItemSection == null ? new ItemBuilder(Material.RED_STAINED_GLASS_PANE) : ItemBuilder.fromConfig(tntGunBlockedItemSection);
+            tntGunBlockedItem.namespacedKey(blockedItemKey, PersistentDataType.BYTE, (byte) 0);
+
+            tntGunBlockedSlots = tntGunSection.getIntegerList("blocked_slots");
         } else {
             tntGunSpeed = 1.0;
             tntGunRegionBreak = true;
             tntGunBuilder = new ItemBuilder(Material.DISPENSER);
             tntGunBuilder.namespacedKey(tntGunNamespacedKey, PersistentDataType.STRING, "value");
+
+            tntGunBlockedItem = new ItemBuilder(Material.RED_STAINED_GLASS_PANE);
+            tntGunBlockedItem.namespacedKey(blockedItemKey, PersistentDataType.BYTE, (byte) 0);
+
+            tntGunBlockedSlots = List.of(0, 1, 2, 3, 5, 6, 7, 8);
         }
     }
 
@@ -119,13 +138,13 @@ public class TNTConfigManager extends ConfigManager {
     }
 
     public String getEntityTranslation(EntityType entityType) {
-        return entityTranslations.getOrDefault(entityType, entityType.name());
+        return entityTranslations.getOrDefault(entityType, entityType.name().toLowerCase());
     }
 
     public boolean isTNTGunItem(ItemStack itemStack) {
         return itemStack != null &&
-               itemStack.hasItemMeta() &&
-               itemStack.getItemMeta().getPersistentDataContainer().has(tntGunNamespacedKey, PersistentDataType.STRING);
+                itemStack.hasItemMeta() &&
+                itemStack.getItemMeta().getPersistentDataContainer().has(tntGunNamespacedKey, PersistentDataType.STRING);
     }
 
 }

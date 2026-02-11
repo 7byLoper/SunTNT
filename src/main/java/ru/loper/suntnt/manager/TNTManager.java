@@ -28,10 +28,7 @@ public class TNTManager {
         customTNTS.clear();
         File directory = new File(plugin.getDataFolder(), "/tnts");
         if (!directory.exists()) {
-            plugin.saveResource("tnts/TNTA.yml", true);
-            plugin.saveResource("tnts/TNTICE.yml", true);
-            plugin.saveResource("tnts/TNTAQUA.yml", true);
-            plugin.saveResource("tnts/TNTSPAWNER.yml", true);
+            plugin.saveResource("tnts/EXAMPLE_TNT.yml", true);
         }
 
         for (File file : Utils.getFiles(directory)) {

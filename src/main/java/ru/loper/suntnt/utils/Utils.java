@@ -33,6 +33,7 @@ public class Utils {
         if (item != null) {
             return item.clone();
         }
+
         return null;
     }
 

@@ -8,6 +8,7 @@ depend:
 softdepend:
   - ProtectionStones
   - WorldGuard
+  - SunMysteriousEggs
   - SunHolyItems
 
 commands:

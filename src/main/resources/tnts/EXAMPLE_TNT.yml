@@ -24,6 +24,14 @@ blocks-radius: 0
 # Шанс взрыва блока в жидкости (ступенька с водой) в % (0-100)
 liquid-chance: 25
 
+spawner_form:
+  material: SPAWNER
+  display_name: '&#CCCCCCР&#D6D6D6а&#E0E0E0с&#EAEAEAс&#F4F4F4а&fд&fн&fи&fк&f:&f {mob}'
+  lore:
+    - ''
+    - '&8Особенности:'
+    - '&#E7E7E7 - автоматически призывает выбранного моба.'
+
 # Время горения фитиля в тиках (20 тиков = 1 секунда)
 fuse-ticks: 80
 

@@ -16,6 +16,7 @@ import org.bukkit.util.Vector;
 import ru.loper.suntnt.api.modules.TNTGunProjectile;
 import ru.loper.suntnt.commands.TNTCommand;
 import ru.loper.suntnt.config.TNTConfigManager;
+import ru.loper.suntnt.listeners.SpawnerPlaceListener;
 import ru.loper.suntnt.listeners.TNTGunListener;
 import ru.loper.suntnt.listeners.TNTPossibilityListener;
 import ru.loper.suntnt.listeners.TNTSpawnListener;
@@ -103,6 +104,7 @@ public final class SunTNT extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new TNTPossibilityListener(this, configManager), this);
         Bukkit.getPluginManager().registerEvents(new TNTSpawnListener(this, configManager), this);
         Bukkit.getPluginManager().registerEvents(new TNTGunListener(this, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new SpawnerPlaceListener(), this);
 
         Optional.ofNullable(getCommand("suntnt"))
                 .orElseThrow(() -> new IllegalStateException("Command 'suntnt' not found!"))

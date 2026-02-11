@@ -258,15 +258,20 @@ public class TNTPossibilityListener implements Listener {
         if (random.nextInt(0, 100) <= customTnt.getSpawnerMobSaveChance()) {
             CreatureSpawner creatureSpawner = (CreatureSpawner) block.getState();
             EntityType entityType = creatureSpawner.getSpawnedType();
-            return createSpawnerItemStack(entityType);
+            return createSpawnerItemStack(entityType, customTnt);
         }
 
         return new ItemStack(Material.SPAWNER);
     }
 
-    public ItemStack createSpawnerItemStack(EntityType entityType) {
-        ItemStack spawnerItem = new ItemStack(Material.SPAWNER);
-        BlockStateMeta blockStateMeta = (BlockStateMeta) spawnerItem.getItemMeta();
+    public ItemStack createSpawnerItemStack(EntityType entityType, CustomTNT customTNT) {
+        ItemBuilder itemBuilder = new ItemBuilder(customTNT.getSpawnerForm().build());
+
+        itemBuilder.name(itemBuilder.name()
+                .replace("{mob}", configManager.getEntityTranslation(entityType))
+        );
+
+        BlockStateMeta blockStateMeta = (BlockStateMeta) itemBuilder.meta();
         if (blockStateMeta == null) {
             return null;
         }
@@ -274,9 +279,9 @@ public class TNTPossibilityListener implements Listener {
         CreatureSpawner spawner = (CreatureSpawner) blockStateMeta.getBlockState();
         spawner.setSpawnedType(entityType);
         blockStateMeta.setBlockState(spawner);
-        blockStateMeta.setDisplayName(configManager.getEntityTranslation(entityType));
-        spawnerItem.setItemMeta(blockStateMeta);
-        return spawnerItem;
+
+        itemBuilder.meta(blockStateMeta);
+        return itemBuilder.build();
     }
 
     private void createIceSphere(Location center, int radius, long delay) {

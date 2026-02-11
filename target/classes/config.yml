@@ -24,6 +24,10 @@ settings:
     name: '&7Динамит'
 
 tnt_gun:
+  blocked_slots: [0,1,2,3,5,6,7,8]
+  blocked_item:
+    material: RED_STAINED_GLASS_PANE
+    display_name: '&f  '
   item:
     material: DISPENSER
     glow: true
