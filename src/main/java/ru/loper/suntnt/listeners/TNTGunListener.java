@@ -23,7 +23,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
-import ru.loper.suncore.api.items.ItemBuilder;
+import ru.loper.suncore.api.itemstack.ItemBuilder;
+import ru.loper.suncore.api.scheduler.SchedulerServices;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.config.TNTConfigManager;
 
@@ -141,7 +142,7 @@ public class TNTGunListener implements Listener {
         shotItem.setAmount(1);
         event.setItem(shotItem);
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        SchedulerServices.clientScheduler().runTask(plugin, () -> {
             inv.removeItem(shotItem);
 
             ItemStack blocked = configManager.getTntGunBlockedItem().build();

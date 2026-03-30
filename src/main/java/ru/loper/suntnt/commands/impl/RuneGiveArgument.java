@@ -10,30 +10,31 @@ import ru.loper.suncore.api.colorize.StringColorize;
 import ru.loper.suncore.api.command.BuildableCommand;
 import ru.loper.suncore.api.command.register.SubCommandRegister;
 import ru.loper.suncore.api.itemstack.ItemBuilder;
-import ru.loper.suntnt.api.modules.CustomTNT;
+import ru.loper.suntnt.api.modules.Rune;
 import ru.loper.suntnt.config.TNTConfigManager;
-import ru.loper.suntnt.manager.TNTManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-@SubCommandRegister(permission = "suntnt.command.give", aliases = "give")
-public class GiveArgument implements BuildableCommand {
-    private final TNTManager tntManager;
+@SubCommandRegister(permission = "suntnt.command.runegive", aliases = "runegive")
+public class RuneGiveArgument implements BuildableCommand {
     private final TNTConfigManager configManager;
 
     @Override
     public void handle(@NotNull CommandSender sender, String[] args) {
-        if (args.length < 2) {
-            sender.sendMessage(StringColorize.parse(configManager.getGiveUsageMessage()));
+        if (args.length < 3) {
+            sender.sendMessage(StringColorize.parse(configManager.getRuneGiveUsageMessage()));
             return;
         }
 
-        CustomTNT customTNT = tntManager.getCustomTNT(args[1]);
-        if (customTNT == null) {
-            sender.sendMessage(StringColorize.parse(configManager.getInvalidTntMessage()));
+        String runeName = args[1];
+        Rune rune = configManager.getRune(runeName);
+
+        if (rune == null) {
+            sender.sendMessage(StringColorize.parse(configManager.getRuneNotFoundMessage()
+                    .replace("{rune}", runeName)));
             return;
         }
 
@@ -42,25 +43,25 @@ public class GiveArgument implements BuildableCommand {
 
         int amount = resolveAmount(args);
         if (amount <= 0) {
-            sender.sendMessage(StringColorize.parse(configManager.getGiveInvalidAmountMessage()));
+            sender.sendMessage(StringColorize.parse(configManager.getInvalidAmountMessage()));
             return;
         }
 
-        ItemBuilder itemBuilder = customTNT.getTntBuilder();
-        ItemStack item = itemBuilder.build();
-        item.setAmount(amount);
+        ItemBuilder runeBuilder = rune.getItemBuilder();
+        ItemStack runeItem = runeBuilder.build();
+        runeItem.setAmount(amount);
 
-        player.getInventory().addItem(item);
+        player.getInventory().addItem(runeItem);
 
-        String message = configManager.getGiveSenderMessage()
-                .replace("{name}", itemBuilder.name())
+        String message = configManager.getRuneGiveSenderMessage()
+                .replace("{rune}", runeBuilder.name())
                 .replace("{amount}", String.valueOf(amount))
                 .replace("{player}", player.getName());
         sender.sendMessage(StringColorize.parse(message));
 
         if (!sender.equals(player)) {
-            String playerMessage = configManager.getGivePlayerMessage()
-                    .replace("{name}", itemBuilder.name())
+            String playerMessage = configManager.getRuneGivePlayerMessage()
+                    .replace("{rune}", runeBuilder.name())
                     .replace("{amount}", String.valueOf(amount));
             player.sendMessage(StringColorize.parse(playerMessage));
         }
@@ -96,7 +97,7 @@ public class GiveArgument implements BuildableCommand {
     @Override
     public List<String> tabComplete(@NotNull CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return tntManager.getCustomTNTsName().stream()
+            return configManager.getTntRunes().keySet().stream()
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                     .collect(Collectors.toList());
         }

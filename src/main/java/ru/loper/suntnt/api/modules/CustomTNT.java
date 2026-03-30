@@ -1,18 +1,16 @@
 package ru.loper.suntnt.api.modules;
 
 import lombok.Data;
-import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import ru.loper.suncore.api.colorize.StringColorize;
 import ru.loper.suncore.api.config.CustomConfig;
-import ru.loper.suncore.api.items.ItemBuilder;
-import ru.loper.suncore.utils.Colorize;
+import ru.loper.suncore.api.itemstack.ItemBuilder;
 import ru.loper.suntnt.SunTNT;
 import ru.loper.suntnt.manager.TNTManager;
 import ru.loper.suntnt.utils.Utils;
@@ -69,6 +67,7 @@ public class CustomTNT {
         } else {
             tntBuilder = ItemBuilder.fromConfig(builderSection);
         }
+        tntBuilder.namespacedKey(tntManager.getTntTypeKey(), PersistentDataType.STRING, name);
 
         ConfigurationSection spawnerBuilderSection = config.getConfigurationSection("spawner_form");
         if (builderSection == null) {
@@ -77,14 +76,11 @@ public class CustomTNT {
             spawnerForm = ItemBuilder.fromConfig(spawnerBuilderSection);
         }
 
-        ItemMeta meta = tntBuilder.meta();
-        meta.getPersistentDataContainer().set(tntManager.getTntTypeKey(), PersistentDataType.STRING, name);
-        tntBuilder.meta(meta);
 
         ConfigurationSection customNameSection = config.getConfigurationSection("custom_name");
         if (customNameSection != null) {
             customNameVisible = customNameSection.getBoolean("visible", false);
-            customName = Colorize.parse(customNameSection.getString("name"));
+            customName = StringColorize.parse(customNameSection.getString("name"));
         } else {
             customNameVisible = false;
             customName = "";

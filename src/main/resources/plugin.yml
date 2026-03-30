@@ -10,8 +10,3 @@ softdepend:
   - WorldGuard
   - SunMysteriousEggs
   - SunHolyItems
-
-commands:
-  suntnt:
-    aliases:
-      - tnt

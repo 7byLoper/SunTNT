@@ -6,7 +6,7 @@
 
     <groupId>ru.loper</groupId>
     <artifactId>SunTNT</artifactId>
-    <version>1.5.0-RELEASE</version>
+    <version>1.6.1-RELEASE</version>
     <packaging>jar</packaging>
 
     <name>SunTNT</name>
@@ -88,11 +88,18 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.7byLoper.SunCore-recode</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0.2-BETA</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.7byloper</groupId>
             <artifactId>SunCore</artifactId>
             <version>1.0.4.0-RELEASE</version> <!-- Укажите актуальную версию -->
             <scope>provided</scope>
         </dependency>
+        <!-- Локальная -->
         <dependency>
             <groupId>dev.espi</groupId>
             <artifactId>ProtectionStones</artifactId>

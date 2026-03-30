@@ -1,26 +1,38 @@
 package ru.loper.suntnt.commands;
 
-import org.bukkit.permissions.Permission;
-import ru.loper.suncore.api.command.AdvancedSmartCommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
+import ru.loper.suncore.api.command.executor.BaseCommandExecutor;
+import ru.loper.suncore.api.command.register.CommandRegister;
 import ru.loper.suntnt.SunTNT;
-import ru.loper.suntnt.commands.impl.CustomItemsArgument;
-import ru.loper.suntnt.commands.impl.GiveArgument;
-import ru.loper.suntnt.commands.impl.TNTGunGiveArgument;
-import ru.loper.suntnt.config.TNTConfigManager;
+import ru.loper.suntnt.commands.impl.*;
 
-public class TNTCommand extends AdvancedSmartCommandExecutor {
+@CommandRegister(name = "suntnt", permission = "suntnt.command.use")
+public class TNTCommand extends BaseCommandExecutor {
 
-    private final TNTConfigManager configManager;
+    private final SunTNT plugin;
 
     public TNTCommand(SunTNT plugin) {
-        configManager = plugin.getConfigManager();
-        addSubCommand(new CustomItemsArgument(configManager), new Permission("suntnt.command.customitems"), "customitems");
-        addSubCommand(new GiveArgument(plugin.getTntManager()), new Permission("suntnt.command.give"), "give");
-        addSubCommand(new TNTGunGiveArgument(plugin.getConfigManager()), new Permission("suntnt.command.givegun"), "givegun");
+        super(plugin);
+        this.plugin = plugin;
     }
 
     @Override
-    public String getDontPermissionMessage() {
-        return configManager.getNoPermissionsMessage();
+    public String getNoPermissionMessage() {
+        return plugin.getConfigManager().getNoPermissionsMessage();
+    }
+
+    @Override
+    public void registerWrappers() {
+        addSubCommand(new CustomItemsArgument(plugin.getConfigManager()));
+        addSubCommand(new GiveArgument(plugin.getTntManager(), plugin.getConfigManager()));
+        addSubCommand(new TNTGunGiveArgument(plugin.getConfigManager()));
+        addSubCommand(new RuneGiveArgument(plugin.getConfigManager()));
+        addSubCommand(new ReloadArgument(plugin.getConfigManager(),plugin.getTntManager()));
+    }
+
+    @Override
+    public void handleNoArguments(@NotNull CommandSender commandSender) {
+
     }
 }

@@ -23,7 +23,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import ru.loper.suncore.api.items.ItemBuilder;
+import ru.loper.suncore.api.itemstack.ItemBuilder;
+import ru.loper.suncore.api.scheduler.SchedulerServices;
 import ru.loper.sunholyitems.SunHolyItems;
 import ru.loper.sunholyitems.api.modules.blocks.impl.GoldSpawner;
 import ru.loper.sunholyitems.manager.GoldSpawnerManager;
@@ -231,7 +232,7 @@ public class TNTPossibilityListener implements Listener {
                 goldSpawnerManager.removeSpawner(block.getLocation());
 
                 if (random.nextInt(0, 100) <= customTnt.getGoldSpawnerChance()) {
-                    ItemBuilder dropBuilder = goldSpawner.getItemBuilder();
+                    ru.loper.suncore.api.items.ItemBuilder dropBuilder = goldSpawner.getItemBuilder();
                     if (dropBuilder != null) {
                         return dropBuilder.build();
                     }
@@ -247,7 +248,7 @@ public class TNTPossibilityListener implements Listener {
                 spawnerManager.removeSpawner(block.getLocation());
 
                 if (random.nextInt(0, 100) <= customTnt.getMysteriousSpawnerChance()) {
-                    ItemBuilder dropBuilder = eggConfig.spawnerBuilder();
+                    ru.loper.suncore.api.items.ItemBuilder dropBuilder = eggConfig.spawnerBuilder();
                     if (dropBuilder != null) {
                         return dropBuilder.build();
                     }
@@ -312,7 +313,7 @@ public class TNTPossibilityListener implements Listener {
     }
 
     private void scheduleIceRemoval(Location location, long delay) {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        SchedulerServices.clientScheduler().runTaskLater(plugin, () -> {
             Block block = location.getBlock();
             if (block.getType() == Material.ICE) {
                 if (waterBlocks.getIfPresent(block.getLocation()) != null) {

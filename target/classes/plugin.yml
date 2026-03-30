@@ -1,5 +1,5 @@
 name: SunTNT
-version: '1.4.0-RELEASE'
+version: '1.6.1-RELEASE'
 main: ru.loper.suntnt.SunTNT
 author: Loper
 api-version: '1.16'
@@ -10,8 +10,3 @@ softdepend:
   - WorldGuard
   - SunMysteriousEggs
   - SunHolyItems
-
-commands:
-  suntnt:
-    aliases:
-      - tnt

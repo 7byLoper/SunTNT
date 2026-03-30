@@ -11,21 +11,26 @@ import ru.loper.suntnt.utils.Utils;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Getter
 public class TNTManager {
     private final SunTNT plugin;
-    private final HashMap<String, CustomTNT> customTNTS = new HashMap<>();
-    @Getter
+    private final Map<String, CustomTNT> customTNTs;
+
     private final NamespacedKey tntTypeKey;
 
     public TNTManager(SunTNT plugin) {
-        tntTypeKey = new NamespacedKey(plugin, "TNTType");
         this.plugin = plugin;
-        init();
+
+        this.tntTypeKey = new NamespacedKey(plugin, "TNTType");
+        this.customTNTs = new HashMap<>();
+
+        reload();
     }
 
-    public void init() {
-        customTNTS.clear();
+    public void reload() {
+        customTNTs.clear();
         File directory = new File(plugin.getDataFolder(), "/tnts");
         if (!directory.exists()) {
             plugin.saveResource("tnts/EXAMPLE_TNT.yml", true);
@@ -35,12 +40,12 @@ public class TNTManager {
             if (!file.getName().endsWith(".yml")) continue;
 
             CustomConfig config = new CustomConfig(file);
-            customTNTS.put(config.getConfig().getString("name", "default"), new CustomTNT(config, this));
+            customTNTs.put(config.getConfig().getString("name", "default"), new CustomTNT(config, this));
         }
     }
 
     public CustomTNT getCustomTNT(String name) {
-        return customTNTS.get(name);
+        return customTNTs.get(name);
     }
 
     public CustomTNT getCustomTNT(Entity entity) {
@@ -48,10 +53,10 @@ public class TNTManager {
             return null;
         }
         String tntType = entity.getMetadata("TNTType").get(0).asString();
-        return customTNTS.get(tntType);
+        return customTNTs.get(tntType);
     }
 
     public List<String> getCustomTNTsName() {
-        return customTNTS.keySet().stream().toList();
+        return customTNTs.keySet().stream().toList();
     }
 }
