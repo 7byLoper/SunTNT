@@ -1,12 +1,15 @@
 name: SunTNT
-version: '${project.version}'
 main: ru.loper.suntnt.SunTNT
-author: Loper
+
+version: '${version}'
 api-version: '1.16'
+
+author: Loper
+
 depend:
   - SunCore
 softdepend:
   - ProtectionStones
   - WorldGuard
   - SunMysteriousEggs
-  - SunHolyItems
+  - SunHolyGoldSpawner

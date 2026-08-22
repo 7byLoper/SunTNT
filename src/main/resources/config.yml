@@ -9,7 +9,7 @@ messages:
   offline-target: '&d▶ &fДанный игрока сейчас не в сети'
   invalid-tnt: '&d▶ &fДанного динамита не существует'
   no-permissions: '&d▶ &fУ вас недостаточно прав'
-  
+
   custom-items-usage: '&c▶ &fИспользование: /tnt customitems [give/add/remove] [название] [игрок] [количество]'
   custom-items-name-required: '&c▶ &fНапишите название предмета'
   custom-items-not-exists: '&c▶ &fПредмет &e{item} &fне существует'
@@ -19,14 +19,14 @@ messages:
   custom-items-add-success: '&d▶ &fВы успешно добавили предмет &e{name} &fв конфиг'
   custom-items-config-error: '&c▶ &fОшибка получения предметов из конфига'
   custom-items-give-success: '&a▶ &fВыдан предмет &e{item} &fигроку &e{player}'
-  
+
   give-usage: '&c▶ &fИспользование: /tnt give [динамит] [игрок] [количество]'
   give-invalid-amount: '&c▶ &fНекорректное количество предметов'
-  
+
   givegun-usage: '&c▶ &fИспользование: /tnt givegun [игрок] [количество]'
   givegun-invalid-amount: '&c▶ &fНекорректное количество предметов'
   givegun-success: '&a▶ &fТнт пушка успешно выдана игроку &e{player} &fx{amount}'
-  
+
   rune-give-usage: '&c▶ &fИспользование: /tnt runegive [руна] [игрок] [количество]'
   rune-not-found: '&c▶ &fРуна &e{rune} &fне найдена'
   rune-give-sender: '&a▶ &fВы выдали руну &e{rune} &fx{amount} &fигроку &e{player}'

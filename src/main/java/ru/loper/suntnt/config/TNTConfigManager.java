@@ -1,5 +1,7 @@
 package ru.loper.suntnt.config;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,10 +18,7 @@ import ru.loper.suncore.api.config.ConfigManager;
 import ru.loper.suncore.api.config.CustomConfig;
 import ru.loper.suncore.api.itemstack.ItemBuilder;
 import ru.loper.suntnt.api.enums.RuneType;
-import ru.loper.suntnt.api.modules.Rune;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import ru.loper.suntnt.api.model.Rune;
 
 @Getter
 public class TNTConfigManager extends ConfigManager {
@@ -97,7 +96,8 @@ public class TNTConfigManager extends ConfigManager {
     public void loadValues() {
         entityTranslations = new HashMap<>();
 
-        ConfigurationSection entityTranslationsSection = getTranslationConfig().getConfig().getConfigurationSection("entities");
+        ConfigurationSection entityTranslationsSection =
+                getTranslationConfig().getConfig().getConfigurationSection("entities");
         if (entityTranslationsSection != null) {
             for (String key : entityTranslationsSection.getKeys(false)) {
                 try {
@@ -131,11 +131,15 @@ public class TNTConfigManager extends ConfigManager {
             tntGunRegionBreak = tntGunSection.getBoolean("region_break");
 
             ConfigurationSection itemBuilderSection = tntGunSection.getConfigurationSection("item");
-            tntGunBuilder = itemBuilderSection == null ? new ItemBuilder(Material.DISPENSER) : ItemBuilder.fromConfig(itemBuilderSection);
+            tntGunBuilder = itemBuilderSection == null
+                    ? new ItemBuilder(Material.DISPENSER)
+                    : ItemBuilder.fromConfig(itemBuilderSection);
             tntGunBuilder.namespacedKey(tntGunNamespacedKey, PersistentDataType.STRING, "value");
 
             ConfigurationSection tntGunBlockedItemSection = tntGunSection.getConfigurationSection("blocked_item");
-            tntGunBlockedItem = tntGunBlockedItemSection == null ? new ItemBuilder(Material.RED_STAINED_GLASS_PANE) : ItemBuilder.fromConfig(tntGunBlockedItemSection);
+            tntGunBlockedItem = tntGunBlockedItemSection == null
+                    ? new ItemBuilder(Material.RED_STAINED_GLASS_PANE)
+                    : ItemBuilder.fromConfig(tntGunBlockedItemSection);
             tntGunBlockedItem.namespacedKey(blockedItemKey, PersistentDataType.BYTE, (byte) 0);
 
             tntGunBlockedSlots = tntGunSection.getIntegerList("blocked_slots");
@@ -262,9 +266,11 @@ public class TNTConfigManager extends ConfigManager {
     }
 
     public boolean isTNTGunItem(ItemStack itemStack) {
-        return itemStack != null &&
-                itemStack.hasItemMeta() &&
-                itemStack.getItemMeta().getPersistentDataContainer().has(tntGunNamespacedKey, PersistentDataType.STRING);
+        return itemStack != null
+                && itemStack.hasItemMeta()
+                && itemStack
+                        .getItemMeta()
+                        .getPersistentDataContainer()
+                        .has(tntGunNamespacedKey, PersistentDataType.STRING);
     }
-
 }

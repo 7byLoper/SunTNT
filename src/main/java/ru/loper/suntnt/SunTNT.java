@@ -11,14 +11,18 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
-import ru.loper.suntnt.api.modules.TNTGunProjectile;
-import ru.loper.suntnt.commands.TNTCommand;
+import ru.loper.suntnt.api.model.TNTGunProjectile;
+import ru.loper.suntnt.command.TNTCommand;
 import ru.loper.suntnt.config.TNTConfigManager;
-import ru.loper.suntnt.listeners.*;
+import ru.loper.suntnt.handler.FlagHandler;
+import ru.loper.suntnt.hook.GoldSpawnerHook;
+import ru.loper.suntnt.listener.*;
+import ru.loper.suntnt.listener.tnt.TNTGunListener;
+import ru.loper.suntnt.listener.tnt.TNTPossibilityListener;
+import ru.loper.suntnt.listener.tnt.TNTSpawnListener;
 import ru.loper.suntnt.manager.TNTManager;
-import ru.loper.suntnt.utils.FlagHandler;
+import ru.loper.suntnt.manager.TNTSpawnManager;
+import ru.loper.suntnt.runnable.TnTGunRunnable;
 import ru.loper.suntnt.utils.Utils;
 
 @Getter
@@ -29,9 +33,11 @@ public final class SunTNT extends JavaPlugin {
 
     private TNTManager tntManager;
     private TNTConfigManager configManager;
+    private TNTSpawnManager tntSpawnManager;
+    private GoldSpawnerHook goldSpawnerHook;
 
     private boolean protectionStonesStatus = true;
-    private boolean holyItemsStatus = true;
+    private boolean holyGoldSpawnerStatus = true;
     private boolean mysteriousEggsStatus = true;
 
     public static void handleTNTGun(TNTGunProjectile tntGunProjectile) {
@@ -51,24 +57,7 @@ public final class SunTNT extends JavaPlugin {
         snowball.setGravity(false);
         snowball.setMetadata("TNTGunProjectile", new FixedMetadataValue(instance, "TNTGun"));
 
-        new BukkitRunnable() {
-            private final Vector velocity = block.getRelative(blockFace).getLocation().toVector().subtract(block.getLocation().toVector());
-
-            public void run() {
-                if (snowball.isDead() || !snowball.isValid()) {
-                    cancel();
-                    return;
-                }
-
-                if (snowball.getPassengers().isEmpty()) {
-                    snowball.remove();
-                    cancel();
-                    return;
-                }
-
-                snowball.setVelocity(velocity);
-            }
-        }.runTaskTimerAsynchronously(instance, 5L, 5L);
+        new TnTGunRunnable(block, blockFace, snowball).runTaskTimer(instance, 5L, 5L);
     }
 
     @Override
@@ -79,30 +68,54 @@ public final class SunTNT extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        initDepends();
+
+        configManager = new TNTConfigManager(this);
+        tntManager = new TNTManager(this);
+        tntSpawnManager = new TNTSpawnManager();
+
+        registerListeners();
+        registerCommands();
+    }
+
+    private void registerCommands() {
+        new TNTCommand(this).registerWrappers();
+    }
+
+    private void registerListeners() {
+        Bukkit.getPluginManager().registerEvents(new TNTPossibilityListener(this, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new TNTSpawnListener(this, configManager, tntSpawnManager), this);
+        Bukkit.getPluginManager().registerEvents(new TNTGunListener(this, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new AnvilListener(configManager), this);
+        Bukkit.getPluginManager().registerEvents(new SpawnerPlaceListener(), this);
+    }
+
+    private void initDepends() {
         Plugin protectionStones = Bukkit.getPluginManager().getPlugin("ProtectionStones");
-        if (protectionStones == null || !protectionStones.getDescription().getVersion().contains("SUN-EDITION")) {
+        if (protectionStones == null
+                || !protectionStones.getDescription().getVersion().contains("SUN-EDITION")) {
             protectionStonesStatus = false;
-            getLogger().warning("ProtectionStones (SUN) отсутствует, плагин не будет работать с регионами. Приобрести плагина можно в нашей студии t.me/bySunDev");
+            getLogger()
+                    .warning(
+                            "ProtectionStones (SUN) отсутствует, плагин не будет работать с регионами. Приобрести плагина можно в нашей студии t.me/bySunDev");
         }
 
-        if (Bukkit.getPluginManager().getPlugin("SunHolyItems") == null) {
-            holyItemsStatus = false;
+        if (Bukkit.getPluginManager().getPlugin("SunHolyGoldSpawner") != null) {
+            goldSpawnerHook = new GoldSpawnerHook();
+            goldSpawnerHook.hook();
+        } else {
+            holyGoldSpawnerStatus = false;
         }
 
         if (Bukkit.getPluginManager().getPlugin("SunMysteriousEggs") == null) {
             mysteriousEggsStatus = false;
         }
+    }
 
-        configManager = new TNTConfigManager(this);
-        tntManager = new TNTManager(this);
-
-        Bukkit.getPluginManager().registerEvents(new TNTPossibilityListener(this, configManager), this);
-        Bukkit.getPluginManager().registerEvents(new TNTSpawnListener(this, configManager), this);
-        Bukkit.getPluginManager().registerEvents(new TNTGunListener(this, configManager), this);
-        Bukkit.getPluginManager().registerEvents(new AnvilListener(configManager), this);
-        Bukkit.getPluginManager().registerEvents(new SpawnerPlaceListener(), this);
-
-        new TNTCommand(this)
-                .registerWrappers();
+    @Override
+    public void onDisable() {
+        if (tntManager != null) {
+            tntManager.unregisterRecipes();
+        }
     }
 }

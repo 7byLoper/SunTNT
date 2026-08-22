@@ -1,13 +1,12 @@
 package ru.loper.suntnt.api.enums;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import ru.loper.suntnt.api.modules.Rune;
-import ru.loper.suntnt.runes.*;
-import ru.loper.suntnt.runes.effects.EffectsRune;
-
 import java.util.Arrays;
 import java.util.function.Supplier;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import ru.loper.suntnt.api.model.Rune;
+import ru.loper.suntnt.rune.*;
+import ru.loper.suntnt.rune.effects.EffectsRune;
 
 @Getter
 @RequiredArgsConstructor
