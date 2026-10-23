@@ -1,8 +1,8 @@
-# Мне стало лень их добавлять, работает только no-permissions
+# Основные сообщения плагина
 messages:
   give-sender: '&d▶ &fВы &7успешно выдали&f динамит {name} &7x{amount}&f игроку &7{player}'
   give-player: '&d▶ &fВы &7успешно получили&f динамит {name} &7x{amount}'
-  add-custom-item: '&d▶ &fВы успешно добавили предмет {name}'
+  add-custom-item: '&d▶ &fВы успешно добабили предмет {name}'
   remove-custom-item: '&d▶ &fВы успешно удалили предмет {name}'
   error-command: '&d▶ &fОшибка в выполнении команды'
   error-item: '&d▶ &fПредемет не должен быть воздухом'
@@ -34,29 +34,39 @@ messages:
   invalid-amount: '&c▶ &fНекорректное количество'
   player-only-command: '&c▶ &fДанная команда доступна только игрокам'
 
+# Общие настройки
 settings:
   # Отключает взрыв предметов
   disable_item_explosion: true
+
   # Отключает взрыв спавнеров
   disable_spawner_explosion: true
-  # Отключает взрыв защитных блоков
-  disable_protection_blocks_explosion: true
 
+  # Отключает взрыв защитных блоков
+  disable_protection_blocks_explosion: false
+
+  # Отображаемое имя динамита по умолчанию
   default_custom_name:
     visible: true
     name: '&7Динамит'
 
+# Защитные блоки: переход одного материала в другой при взрыве
+protection_blocks:
+  ANCIENT_DEBRIS: CRYING_OBSIDIAN
+  CRYING_OBSIDIAN: OBSIDIAN
 
+# Текст перед улучшениями динамита
 runes_info_lore: '&8Улучшения:'
 
+# Руны улучшений
 runes:
-  # Накладывает зелье эффекты на цель
+  # Накладывает эффекты на цель
   effects:
     rune_type: EFFECTS
     display_name: '&#FF5555Руна эффектов'
     cost: 10
 
-    # Настройки предмета руны
+    # Предмет руны
     item:
       material: NETHER_STAR
       display_name: '&#FF5555Руна светлячок'
@@ -69,22 +79,10 @@ runes:
       glow: true
 
     effects:
-      # ЭФФЕКТ:ДЛИТЕЛЬНОСТЬ(тики):СИЛА
       potions:
         - "GLOW:100:2"
-
-      # Цель эффектов:
-      # PLAYERS - только игроки
-      # ENTITIES - только мобы (кроме игроков и ТНТ)
-      # ALL - все живые существа
       target: "PLAYERS"
-
-      # Когда применять эффекты:
-      # PRIME - при активации динамита
-      # EXPLOSION - при взрыве
       give_action: "EXPLOSION"
-
-      # Радиус действия эффектов (в блоках)
       radius: 20
 
   # Отключает гравитацию у динамита
@@ -126,6 +124,7 @@ runes:
     rune_type: ASCENSION
     display_name: '&#FFD700Руна вознесения'
     cost: 10
+
     item:
       material: FIREWORK_ROCKET
       display_name: '&#FFD700Руна вознесения'
@@ -136,17 +135,20 @@ runes:
         - '&8 • &fДинамит взлетает высоко в воздух'
         - ''
       glow: true
+
     velocity:
       upward: 2.5
       random_direction: false
       horizontal_spread: 0.3
 
-
+# Настройки пушки динамита
 tnt_gun:
-  blocked_slots: [0,1,2,3,5,6,7,8]
+  blocked_slots: [0, 1, 2, 3, 5, 6, 7, 8]
+
   blocked_item:
     material: RED_STAINED_GLASS_PANE
     display_name: '&f  '
+
   item:
     material: DISPENSER
     glow: true
@@ -160,5 +162,6 @@ tnt_gun:
       - '&0.&7   &#FB3838особых динамитов и пиротехники;'
       - '&7 - &#E7E7E7можно сломать в чужом привате.'
       - ''
+
   speed: 1.0
   region_break: true

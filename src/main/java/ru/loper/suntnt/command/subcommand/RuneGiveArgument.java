@@ -1,7 +1,7 @@
 package ru.loper.suntnt.command.subcommand;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
@@ -19,39 +19,41 @@ import ru.loper.suntnt.config.TNTConfigManager;
 @RequiredArgsConstructor
 @SubCommandRegister(permission = "suntnt.command.runegive", aliases = "runegive")
 public class RuneGiveArgument implements BuildableCommand {
+
     private final TNTConfigManager configManager;
 
     @Override
-    public void handle(@NotNull CommandSender sender, String[] args) {
-        if (args.length < 3) {
+    public void handle(final @NotNull CommandSender sender, final String[] args) {
+        if (args.length < 2) {
             TextFormatter.send(sender, configManager.getRuneGiveUsageMessage());
             return;
         }
 
-        String runeName = args[1];
-        Rune rune = configManager.getRune(runeName);
-
+        final String runeName = args[1];
+        final Rune rune = configManager.getRune(runeName);
         if (rune == null) {
             TextFormatter.send(sender, configManager.getRuneNotFoundMessage().replace("{rune}", runeName));
             return;
         }
 
-        Player player = resolveTargetPlayer(sender, args);
-        if (player == null) return;
+        final Player player = resolveTargetPlayer(sender, args);
+        if (player == null) {
+            return;
+        }
 
-        int amount = resolveAmount(args);
+        final int amount = resolveAmount(args);
         if (amount <= 0) {
             TextFormatter.send(sender, configManager.getInvalidAmountMessage());
             return;
         }
 
-        ItemBuilder runeBuilder = rune.getItemBuilder();
-        ItemStack runeItem = runeBuilder.build();
+        final ItemBuilder runeBuilder = rune.getItemBuilder();
+        final ItemStack runeItem = runeBuilder.build();
         runeItem.setAmount(amount);
 
         player.getInventory().addItem(runeItem);
 
-        String message = configManager
+        final String message = configManager
                 .getRuneGiveSenderMessage()
                 .replace("{rune}", runeBuilder.name())
                 .replace("{amount}", String.valueOf(amount))
@@ -59,7 +61,7 @@ public class RuneGiveArgument implements BuildableCommand {
         TextFormatter.send(sender, message);
 
         if (!sender.equals(player)) {
-            String playerMessage = configManager
+            final String playerMessage = configManager
                     .getRuneGivePlayerMessage()
                     .replace("{rune}", runeBuilder.name())
                     .replace("{amount}", String.valueOf(amount));
@@ -67,25 +69,28 @@ public class RuneGiveArgument implements BuildableCommand {
         }
     }
 
-    private Player resolveTargetPlayer(CommandSender sender, String[] args) {
+    private Player resolveTargetPlayer(final CommandSender sender, final String[] args) {
         if (args.length < 3) {
-            if (!(sender instanceof Player)) {
+            if (!(sender instanceof Player player)) {
                 TextFormatter.send(sender, configManager.getPlayerOnlyCommandMessage());
                 return null;
             }
-            return (Player) sender;
+            return player;
         }
 
-        Player player = Bukkit.getPlayer(args[2]);
+        final Player player = Bukkit.getPlayer(args[2]);
         if (player == null) {
             TextFormatter.send(sender, configManager.getOfflineTargetMessage());
             return null;
         }
+
         return player;
     }
 
-    private int resolveAmount(String[] args) {
-        if (args.length < 4) return 1;
+    private int resolveAmount(final String[] args) {
+        if (args.length < 4) {
+            return 1;
+        }
 
         try {
             return Math.max(1, Integer.parseInt(args[3]));
@@ -95,24 +100,24 @@ public class RuneGiveArgument implements BuildableCommand {
     }
 
     @Override
-    public List<String> tabComplete(@NotNull CommandSender sender, String[] args) {
+    public List<String> tabComplete(final @NotNull CommandSender sender, final String[] args) {
         if (args.length == 2) {
             return configManager.getTntRunes().keySet().stream()
-                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(args[1].toLowerCase(Locale.ROOT)))
+                    .toList();
         }
 
         if (args.length == 3) {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
-                    .collect(Collectors.toList());
+                    .filter(s -> s.toLowerCase(Locale.ROOT).startsWith(args[2].toLowerCase(Locale.ROOT)))
+                    .toList();
         }
 
         if (args.length == 4) {
             return Stream.of("1", "8", "16", "32", "64")
                     .filter(s -> s.startsWith(args[3]))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return List.of();

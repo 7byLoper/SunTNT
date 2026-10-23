@@ -9,16 +9,19 @@ import ru.loper.suntnt.api.model.Rune;
 
 @Getter
 public class GravitationRune extends Rune {
-    @Override
-    public void onLoad(ConfigurationSection section) {}
+
+    private static final Vector ZERO_VELOCITY = new Vector(0, 0, 0);
 
     @Override
-    public void handleSpawn(EntitySpawnEvent event) {
+    public void onLoad(final ConfigurationSection section) {}
+
+    @Override
+    public void handleSpawn(final EntitySpawnEvent event) {
         if (!(event.getEntity() instanceof TNTPrimed tnt)) {
             return;
         }
 
         tnt.setGravity(false);
-        tnt.setVelocity(new Vector(0, 0, 0));
+        tnt.setVelocity(ZERO_VELOCITY);
     }
 }

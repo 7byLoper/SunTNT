@@ -10,12 +10,15 @@ import ru.loper.suntnt.api.model.TNTGunProjectile;
 
 @Getter
 public class TNTSpawnManager {
+
+    private static final long CACHE_EXPIRE_SECONDS = 10L;
+
     private final Cache<Block, CustomTNT> cachedTNTs =
-            CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+            CacheBuilder.newBuilder().expireAfterWrite(CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS).build();
 
     private final Cache<Block, TNTGunProjectile> cachedGunProjectiles =
-            CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+            CacheBuilder.newBuilder().expireAfterWrite(CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS).build();
 
     private final Cache<Block, String> cachedRunes =
-            CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+            CacheBuilder.newBuilder().expireAfterWrite(CACHE_EXPIRE_SECONDS, TimeUnit.SECONDS).build();
 }

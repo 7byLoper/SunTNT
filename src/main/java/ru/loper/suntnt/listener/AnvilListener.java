@@ -14,30 +14,35 @@ import ru.loper.suntnt.config.TNTConfigManager;
 
 @RequiredArgsConstructor
 public class AnvilListener implements Listener {
+
     private final TNTConfigManager configManager;
 
     @EventHandler
-    public void onPrepareAnvil(PrepareAnvilEvent event) {
-        AnvilInventory inventory = event.getInventory();
+    public void onPrepareAnvil(final PrepareAnvilEvent event) {
+        final AnvilInventory inventory = event.getInventory();
+        final ItemStack firstItem = inventory.getFirstItem();
+        final ItemStack secondItem = inventory.getSecondItem();
 
-        ItemStack firstItem = inventory.getFirstItem();
-        ItemStack secondItem = inventory.getSecondItem();
+        if (firstItem == null || secondItem == null) {
+            return;
+        }
 
-        if (firstItem == null || secondItem == null) return;
-        if (firstItem.getType() != Material.TNT) return;
+        if (firstItem.getType() != Material.TNT) {
+            return;
+        }
 
-        if (!isRuneMeta(secondItem)) return;
-        if (secondItem.getAmount() != 1) return;
+        if (!isRuneMeta(secondItem) || secondItem.getAmount() != 1) {
+            return;
+        }
 
-        String name = getRuneType(secondItem);
+        final String name = getRuneType(secondItem);
+        final Rune rune = configManager.getRune(name);
+        if (rune == null) {
+            return;
+        }
 
-        Rune rune = configManager.getRune(name);
-        if (rune == null) return;
-
-        ItemStack result = firstItem.clone();
-
-        Set<Rune> existingRunes = configManager.getRunesFromTNT(result);
-
+        final ItemStack result = firstItem.clone();
+        final Set<Rune> existingRunes = configManager.getRunesFromTNT(result);
         if (existingRunes.stream().anyMatch(r -> r.getName().equals(rune.getName()))) {
             return;
         }
@@ -46,13 +51,13 @@ public class AnvilListener implements Listener {
         inventory.setRepairCost(rune.getCost());
     }
 
-    private boolean isRuneMeta(ItemStack item) {
+    private boolean isRuneMeta(final ItemStack item) {
         return item != null
                 && item.hasItemMeta()
                 && item.getItemMeta().getPersistentDataContainer().has(Rune.getRuneKey(), PersistentDataType.STRING);
     }
 
-    private String getRuneType(ItemStack item) {
+    private String getRuneType(final ItemStack item) {
         return item.getItemMeta()
                 .getPersistentDataContainer()
                 .getOrDefault(Rune.getRuneKey(), PersistentDataType.STRING, "");

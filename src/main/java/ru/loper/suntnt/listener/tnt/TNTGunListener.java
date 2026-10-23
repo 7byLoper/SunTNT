@@ -1,6 +1,6 @@
 package ru.loper.suntnt.listener.tnt;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
@@ -12,7 +12,13 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -31,16 +37,20 @@ import ru.loper.suntnt.config.TNTConfigManager;
 
 @RequiredArgsConstructor
 public class TNTGunListener implements Listener {
+
+    private static final String META_TNT_GUN_PROJECTILE = "TNTGunProjectile";
+    private static final String META_TNT_GUN = "TNTGun";
+
     private final SunTNT plugin;
     private final TNTConfigManager configManager;
 
     @EventHandler
-    public void onHit(ProjectileHitEvent event) {
+    public void onHit(final ProjectileHitEvent event) {
         if (!(event.getEntity() instanceof Snowball snowball)) {
             return;
         }
 
-        if (!snowball.hasMetadata("TNTGunProjectile")) {
+        if (!snowball.hasMetadata(META_TNT_GUN_PROJECTILE)) {
             return;
         }
 
@@ -49,21 +59,22 @@ public class TNTGunListener implements Listener {
             return;
         }
 
-        for (Entity passenger : snowball.getPassengers()) {
-            if (!(passenger instanceof TNTPrimed tntPrimed)) continue;
-            tntPrimed.setFuseTicks(0);
+        for (final Entity passenger : snowball.getPassengers()) {
+            if (passenger instanceof TNTPrimed tntPrimed) {
+                tntPrimed.setFuseTicks(0);
+            }
         }
 
         snowball.remove();
     }
 
     @EventHandler
-    public void onDamage(EntityDamageEvent event) {
+    public void onDamage(final EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Snowball snowball)) {
             return;
         }
 
-        if (!snowball.hasMetadata("TNTGunProjectile")) {
+        if (!snowball.hasMetadata(META_TNT_GUN_PROJECTILE)) {
             return;
         }
 
@@ -71,17 +82,18 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onGunPlace(BlockPlaceEvent event) {
-        ItemStack itemStack = event.getItemInHand();
+    public void onGunPlace(final BlockPlaceEvent event) {
+        final ItemStack itemStack = event.getItemInHand();
         if (!configManager.isTNTGunItem(itemStack)) {
             return;
         }
 
-        Block block = event.getBlockPlaced();
-        block.setMetadata("TNTGun", new FixedMetadataValue(plugin, "TNTGun"));
+        final Block block = event.getBlockPlaced();
+        block.setMetadata(META_TNT_GUN, new FixedMetadataValue(plugin, META_TNT_GUN));
+
         if (block.getState() instanceof Dispenser dispenser) {
-            Inventory inventory = dispenser.getInventory();
-            ItemStack blockedItem = configManager.getTntGunBlockedItem().build();
+            final Inventory inventory = dispenser.getInventory();
+            final ItemStack blockedItem = configManager.getTntGunBlockedItem().build();
             blockedItem.setAmount(1);
 
             configManager.getTntGunBlockedSlots().forEach(slot -> inventory.setItem(slot, blockedItem.clone()));
@@ -89,9 +101,9 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onBlockFade(org.bukkit.event.block.BlockFadeEvent event) {
-        Block block = event.getBlock();
-        if (!block.hasMetadata("TNTGun")) {
+    public void onBlockFade(final BlockFadeEvent event) {
+        final Block block = event.getBlock();
+        if (!block.hasMetadata(META_TNT_GUN)) {
             return;
         }
 
@@ -99,7 +111,7 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onHopperMove(InventoryMoveItemEvent event) {
+    public void onHopperMove(final InventoryMoveItemEvent event) {
         if (!isBlockedItem(event.getItem())) {
             return;
         }
@@ -108,23 +120,24 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onDispense(BlockDispenseEvent event) {
-        Block block = event.getBlock();
-        if (!block.hasMetadata("TNTGun")) {
+    public void onDispense(final BlockDispenseEvent event) {
+        final Block block = event.getBlock();
+        if (!block.hasMetadata(META_TNT_GUN)) {
             return;
         }
 
         if (!isBlockedItem(event.getItem())) {
             return;
         }
+
         if (!(block.getState() instanceof Dispenser dispenser)) {
             return;
         }
 
-        Inventory inv = dispenser.getInventory();
+        final Inventory inv = dispenser.getInventory();
         ItemStack ammo = null;
 
-        for (ItemStack item : inv.getContents()) {
+        for (final ItemStack item : inv.getContents()) {
             if (item != null && !item.getType().isAir() && !isBlockedItem(item)) {
                 ammo = item;
                 break;
@@ -136,21 +149,21 @@ public class TNTGunListener implements Listener {
             return;
         }
 
-        ItemStack shotItem = ammo.clone();
+        final ItemStack shotItem = ammo.clone();
         shotItem.setAmount(1);
         event.setItem(shotItem);
 
         SchedulerServices.clientScheduler().runTask(plugin, () -> {
             inv.removeItem(shotItem);
 
-            ItemStack blocked = configManager.getTntGunBlockedItem().build();
+            final ItemStack blocked = configManager.getTntGunBlockedItem().build();
             blocked.setAmount(1);
             inv.addItem(blocked);
         });
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onHopperPickup(InventoryPickupItemEvent event) {
+    public void onHopperPickup(final InventoryPickupItemEvent event) {
         if (!isBlockedItem(event.getItem().getItemStack())) {
             return;
         }
@@ -158,18 +171,15 @@ public class TNTGunListener implements Listener {
         event.setCancelled(true);
     }
 
-    private boolean isBlockedItem(ItemStack itemStack) {
+    private boolean isBlockedItem(final ItemStack itemStack) {
         return itemStack != null
                 && itemStack.hasItemMeta()
-                && itemStack
-                        .getItemMeta()
-                        .getPersistentDataContainer()
-                        .has(configManager.getBlockedItemKey(), PersistentDataType.BYTE);
+                && itemStack.getItemMeta().getPersistentDataContainer().has(configManager.getBlockedItemKey(), PersistentDataType.BYTE);
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
+    public void onClick(final InventoryClickEvent event) {
+        final ItemStack itemStack = event.getCurrentItem();
         if (!isBlockedItem(itemStack)) {
             return;
         }
@@ -178,9 +188,9 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onBlockFromTo(org.bukkit.event.block.BlockFromToEvent event) {
-        Block block = event.getBlock();
-        if (!block.hasMetadata("TNTGun")) {
+    public void onBlockFromTo(final BlockFromToEvent event) {
+        final Block block = event.getBlock();
+        if (!block.hasMetadata(META_TNT_GUN)) {
             return;
         }
 
@@ -188,48 +198,46 @@ public class TNTGunListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onBlockExplode(BlockExplodeEvent event) {
+    public void onBlockExplode(final BlockExplodeEvent event) {
         cleanExplosionBlocks(event.blockList());
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityExplode(EntityExplodeEvent event) {
+    public void onEntityExplode(final EntityExplodeEvent event) {
         cleanExplosionBlocks(event.blockList());
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onPistonRetract(BlockPistonRetractEvent event) {
-        if (!event.isSticky()) return;
-
-        for (Block block : event.getBlocks()) {
-            if (!block.hasMetadata("TNTGun")) {
-                continue;
-            }
-
-            event.setCancelled(true);
+    public void onPistonRetract(final BlockPistonRetractEvent event) {
+        if (!event.isSticky()) {
             return;
+        }
+
+        for (final Block block : event.getBlocks()) {
+            if (block.hasMetadata(META_TNT_GUN)) {
+                event.setCancelled(true);
+                return;
+            }
         }
     }
 
-    private void cleanExplosionBlocks(List<Block> blocks) {
-        List<Block> blocksToRemove = new ArrayList<>();
-
-        for (Block block : blocks) {
-            if (!block.hasMetadata("TNTGun")) {
+    private void cleanExplosionBlocks(final List<Block> blocks) {
+        final Iterator<Block> iterator = blocks.iterator();
+        while (iterator.hasNext()) {
+            final Block block = iterator.next();
+            if (!block.hasMetadata(META_TNT_GUN)) {
                 continue;
             }
 
             handleBreakGun(block);
-            blocksToRemove.add(block);
+            iterator.remove();
         }
-
-        blocks.removeAll(blocksToRemove);
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        Block block = event.getBlock();
-        if (!block.hasMetadata("TNTGun")) {
+    public void onEntityChangeBlock(final EntityChangeBlockEvent event) {
+        final Block block = event.getBlock();
+        if (!block.hasMetadata(META_TNT_GUN)) {
             return;
         }
 
@@ -237,14 +245,14 @@ public class TNTGunListener implements Listener {
         event.setCancelled(true);
     }
 
-    private void handleBreakGun(Block block) {
+    private void handleBreakGun(final Block block) {
         if (block.getState() instanceof Dispenser dispenser) {
-            Inventory inv = dispenser.getInventory();
+            final Inventory inv = dispenser.getInventory();
+            final ItemStack[] contents = inv.getContents();
 
-            ItemStack[] contents = inv.getContents();
             for (int i = 0; i < contents.length; i++) {
-                ItemStack itemStack = contents[i];
-                if (isBlockedItem(contents[i])) {
+                final ItemStack itemStack = contents[i];
+                if (isBlockedItem(itemStack)) {
                     inv.setItem(i, null);
                     continue;
                 }
@@ -257,19 +265,17 @@ public class TNTGunListener implements Listener {
             inv.clear();
         }
 
-        ItemBuilder gunBuilder = configManager.getTntGunBuilder();
+        final ItemBuilder gunBuilder = configManager.getTntGunBuilder();
 
-        block.getLocation()
-                .getWorld()
-                .dropItemNaturally(block.getLocation(), gunBuilder.amount(1).build());
-        block.removeMetadata("TNTGun", plugin);
+        block.getLocation().getWorld().dropItemNaturally(block.getLocation(), gunBuilder.amount(1).build());
+        block.removeMetadata(META_TNT_GUN, plugin);
         block.setType(Material.AIR);
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void onTNTBreak(BlockBreakEvent event) {
-        Block block = event.getBlock();
-        if (!block.hasMetadata("TNTGun")) {
+    public void onTNTBreak(final BlockBreakEvent event) {
+        final Block block = event.getBlock();
+        if (!block.hasMetadata(META_TNT_GUN)) {
             return;
         }
 

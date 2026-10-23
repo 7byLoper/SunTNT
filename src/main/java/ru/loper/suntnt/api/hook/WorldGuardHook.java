@@ -13,19 +13,23 @@ import org.bukkit.Location;
 
 @UtilityClass
 public class WorldGuardHook {
-    public static boolean hasRegionAtLocation(Location location) {
-        if (!Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) {
+
+    private static final String WORLD_GUARD_PLUGIN = "WorldGuard";
+
+    public static boolean hasRegionAtLocation(final Location location) {
+        if (!Bukkit.getPluginManager().isPluginEnabled(WORLD_GUARD_PLUGIN)) {
             return false;
         }
 
         return !getRegionsAtLocation(location).isEmpty();
     }
 
-    public static Set<ProtectedRegion> getRegionsAtLocation(Location location) {
-        com.sk89q.worldedit.util.Location weLocation = BukkitAdapter.adapt(location);
-        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-        RegionQuery query = container.createQuery();
-        ApplicableRegionSet regions = query.getApplicableRegions(weLocation);
+    public static Set<ProtectedRegion> getRegionsAtLocation(final Location location) {
+        final com.sk89q.worldedit.util.Location weLocation = BukkitAdapter.adapt(location);
+        final RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        final RegionQuery query = container.createQuery();
+        final ApplicableRegionSet regions = query.getApplicableRegions(weLocation);
+
         return regions.getRegions();
     }
 }

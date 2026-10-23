@@ -11,8 +11,8 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 public class SpawnerPlaceListener implements Listener {
 
     @EventHandler
-    public void onSpawnerPlace(BlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand();
+    public void onSpawnerPlace(final BlockPlaceEvent event) {
+        final ItemStack item = event.getItemInHand();
         if (item.getType() != Material.SPAWNER) {
             return;
         }

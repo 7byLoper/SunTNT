@@ -14,6 +14,7 @@ import ru.loper.sunholygoldspawner.manager.SpawnerItemManager;
 
 @Getter
 public class GoldSpawnerHook {
+
     private SunHolyGoldSpawner holyGoldSpawner;
     private SpawnerConfigManager configManager;
     private DataManager dataManager;
@@ -26,22 +27,22 @@ public class GoldSpawnerHook {
         spawnerItemManager = holyGoldSpawner.getItemManager();
     }
 
-    public SpawnerData getGoldSpawnerData(Block block) {
+    public SpawnerData getGoldSpawnerData(final Block block) {
         if (!(block.getState() instanceof CreatureSpawner spawner)) {
             return null;
         }
 
-        String uuidStr =
+        final String uuidStr =
                 spawner.getPersistentDataContainer().get(configManager.getSpawnerItemKey(), PersistentDataType.STRING);
         if (uuidStr == null) {
             return null;
         }
 
-        UUID spawnerUuid = UUID.fromString(uuidStr);
+        final UUID spawnerUuid = UUID.fromString(uuidStr);
         return dataManager.get(spawnerUuid).orElse(null);
     }
 
-    public void removeSpawnerData(Block block) {
+    public void removeSpawnerData(final Block block) {
         if (block == null || block.getType() != Material.SPAWNER) {
             return;
         }
@@ -53,7 +54,7 @@ public class GoldSpawnerHook {
         spawner.getPersistentDataContainer().remove(configManager.getSpawnerItemKey());
     }
 
-    public boolean isGoldSpawner(Block block) {
+    public boolean isGoldSpawner(final Block block) {
         if (block == null || block.getType() != Material.SPAWNER) {
             return false;
         }

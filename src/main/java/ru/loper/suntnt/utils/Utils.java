@@ -3,7 +3,6 @@ package ru.loper.suntnt.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.experimental.UtilityClass;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -14,13 +13,18 @@ import ru.loper.suntnt.SunTNT;
 
 @UtilityClass
 public class Utils {
-    public static List<File> getFiles(File folder) {
-        ArrayList<File> files = new ArrayList<>();
-        if (folder.listFiles() == null) {
+
+    private static final double DISPENSER_OFFSET = 0.7;
+    private static final double CENTER_OFFSET = 0.5;
+
+    public static List<File> getFiles(final File folder) {
+        final List<File> files = new ArrayList<>();
+        final File[] directoryFiles = folder.listFiles();
+        if (directoryFiles == null) {
             return files;
         }
 
-        for (File file : Objects.requireNonNull(folder.listFiles())) {
+        for (final File file : directoryFiles) {
             if (file.isDirectory()) {
                 files.addAll(getFiles(file));
                 continue;
@@ -32,12 +36,13 @@ public class Utils {
         return files;
     }
 
-    public static ItemStack getCustomItem(String path) {
-        ItemStack item = SunTNT.getInstance()
+    public static ItemStack getCustomItem(final String path) {
+        final ItemStack item = SunTNT.getInstance()
                 .getConfigManager()
                 .getCustomConfig("customItems")
                 .getConfig()
                 .getItemStack("items." + path);
+
         if (item != null) {
             return item.clone();
         }
@@ -45,11 +50,13 @@ public class Utils {
         return null;
     }
 
-    public static Location getDispenserLocation(Block dispenser) {
-        Directional directional = (Directional) dispenser.getBlockData();
-        BlockFace face = directional.getFacing();
-        return dispenser
-                .getLocation()
-                .add(0.5 + face.getModX() * 0.7, 0.5 + face.getModY() * 0.7, 0.5 + face.getModZ() * 0.7);
+    public static Location getDispenserLocation(final Block dispenser) {
+        final Directional directional = (Directional) dispenser.getBlockData();
+        final BlockFace face = directional.getFacing();
+
+        return dispenser.getLocation().add(
+                CENTER_OFFSET + face.getModX() * DISPENSER_OFFSET,
+                CENTER_OFFSET + face.getModY() * DISPENSER_OFFSET,
+                CENTER_OFFSET + face.getModZ() * DISPENSER_OFFSET);
     }
 }

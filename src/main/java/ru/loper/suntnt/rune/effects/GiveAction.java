@@ -1,12 +1,19 @@
 package ru.loper.suntnt.rune.effects;
 
+import java.util.Locale;
+
 public enum GiveAction {
+
     EXPLOSION,
     PRIME;
 
-    public static GiveAction getByName(String name) {
+    public static GiveAction getByName(final String name) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+
         try {
-            return valueOf(name.toUpperCase());
+            return valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             return null;
         }

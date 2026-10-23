@@ -3,14 +3,18 @@ package ru.loper.suntnt.command;
 import ru.loper.suncore.api.command.executor.BaseCommandExecutor;
 import ru.loper.suncore.api.command.register.CommandRegister;
 import ru.loper.suntnt.SunTNT;
-import ru.loper.suntnt.command.subcommand.*;
+import ru.loper.suntnt.command.subcommand.CustomItemsArgument;
+import ru.loper.suntnt.command.subcommand.GiveArgument;
+import ru.loper.suntnt.command.subcommand.ReloadArgument;
+import ru.loper.suntnt.command.subcommand.RuneGiveArgument;
+import ru.loper.suntnt.command.subcommand.TNTGunGiveArgument;
 
 @CommandRegister(name = "suntnt", permission = "suntnt.command.use")
 public class TNTCommand extends BaseCommandExecutor {
 
     private final SunTNT plugin;
 
-    public TNTCommand(SunTNT plugin) {
+    public TNTCommand(final SunTNT plugin) {
         super(plugin);
         this.plugin = plugin;
     }

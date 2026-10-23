@@ -7,10 +7,11 @@ import org.bukkit.util.Vector;
 import ru.loper.suncore.api.scheduler.CoreRunnable;
 
 public class TnTGunRunnable extends CoreRunnable {
+
     private final Snowball snowball;
     private final Vector velocity;
 
-    public TnTGunRunnable(Block block, BlockFace blockFace, Snowball snowball) {
+    public TnTGunRunnable(final Block block, final BlockFace blockFace, final Snowball snowball) {
         this.snowball = snowball;
         this.velocity = block.getRelative(blockFace)
                 .getLocation()

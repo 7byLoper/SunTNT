@@ -2,6 +2,7 @@ package ru.loper.suntnt.manager;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -17,17 +18,22 @@ import ru.loper.suntnt.api.model.CustomTNT;
 import ru.loper.suntnt.utils.Utils;
 
 @Getter
-public class TNTManager {
+public final class TNTManager {
+
+    private static final Pattern COLON_PATTERN = Pattern.compile(":");
+    private static final String CUSTOM_ITEM_PREFIX = "customitem:";
+    private static final String TNT_PREFIX = "tnt:";
+    private static final String META_TNT_TYPE = "TNTType";
+    private static final String YAML_EXTENSION = ".yml";
+
     private final SunTNT plugin;
     private final Map<String, CustomTNT> customTNTs;
     private final Set<NamespacedKey> registeredRecipeKeys;
-
     private final NamespacedKey tntTypeKey;
 
-    public TNTManager(SunTNT plugin) {
+    public TNTManager(final SunTNT plugin) {
         this.plugin = plugin;
-
-        this.tntTypeKey = new NamespacedKey(plugin, "TNTType");
+        this.tntTypeKey = new NamespacedKey(plugin, META_TNT_TYPE);
         this.customTNTs = new HashMap<>();
         this.registeredRecipeKeys = new HashSet<>();
 
@@ -37,15 +43,18 @@ public class TNTManager {
     public void reload() {
         unregisterRecipes();
         customTNTs.clear();
-        File directory = new File(plugin.getDataFolder(), "/tnts");
+
+        final File directory = new File(plugin.getDataFolder(), "/tnts");
         if (!directory.exists()) {
             plugin.saveResource("tnts/EXAMPLE_TNT.yml", true);
         }
 
-        for (File file : Utils.getFiles(directory)) {
-            if (!file.getName().endsWith(".yml")) continue;
+        for (final File file : Utils.getFiles(directory)) {
+            if (!file.getName().endsWith(YAML_EXTENSION)) {
+                continue;
+            }
 
-            CustomConfig config = new CustomConfig(file);
+            final CustomConfig config = new CustomConfig(file);
             customTNTs.put(config.getConfig().getString("name", "default"), new CustomTNT(config, this));
         }
 
@@ -63,8 +72,8 @@ public class TNTManager {
                 .forEach(this::registerRecipe);
     }
 
-    private int getRecipePriority(CustomTNT customTNT) {
-        ConfigurationSection recipeSection = customTNT.getRecipeSection();
+    private int getRecipePriority(final CustomTNT customTNT) {
+        final ConfigurationSection recipeSection = customTNT.getRecipeSection();
         if (recipeSection == null) {
             return 1;
         }
@@ -72,30 +81,33 @@ public class TNTManager {
         return Math.max(0, recipeSection.getInt("priority", 1));
     }
 
-    private void registerRecipe(CustomTNT customTNT) {
-        ConfigurationSection recipeSection = customTNT.getRecipeSection();
-        if (recipeSection == null) return;
+    private void registerRecipe(final CustomTNT customTNT) {
+        final ConfigurationSection recipeSection = customTNT.getRecipeSection();
+        if (recipeSection == null) {
+            return;
+        }
 
-        String[] shape = recipeSection.getString("shape", "").split(":");
+        final String[] shape = COLON_PATTERN.split(recipeSection.getString("shape", ""));
         if (shape.length != 3) {
             plugin.getLogger().severe("Ошибка при загрузке крафта для " + customTNT.getName());
             return;
         }
 
-        ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
+        final ConfigurationSection ingredientsSection = recipeSection.getConfigurationSection("ingredients");
         if (ingredientsSection == null) {
-            plugin.getLogger()
-                    .severe("Ошибка при загрузке крафта для " + customTNT.getName() + ", отсутствуют ингредиенты");
+            plugin.getLogger().severe("Ошибка при загрузке крафта для " + customTNT.getName() + ", отсутствуют ингредиенты");
             return;
         }
 
-        NamespacedKey recipeKey = getRecipeKey(customTNT.getName());
-        ShapedRecipe recipe = new ShapedRecipe(recipeKey, customTNT.getItemStack());
+        final NamespacedKey recipeKey = getRecipeKey(customTNT.getName());
+        final ShapedRecipe recipe = new ShapedRecipe(recipeKey, customTNT.getItemStack());
         recipe.shape(shape[0], shape[1], shape[2]);
 
-        for (String key : ingredientsSection.getKeys(false)) {
-            String ingredient = ingredientsSection.getString(key);
-            if (ingredient == null || key.isEmpty()) continue;
+        for (final String key : ingredientsSection.getKeys(false)) {
+            final String ingredient = ingredientsSection.getString(key);
+            if (ingredient == null || key.isEmpty()) {
+                continue;
+            }
 
             if (!applyIngredient(recipe, key.charAt(0), ingredient)) {
                 return;
@@ -111,11 +123,11 @@ public class TNTManager {
         }
     }
 
-    private boolean applyIngredient(ShapedRecipe recipe, char key, String ingredient) {
-        String lowerIngredient = ingredient.toLowerCase(Locale.ROOT);
+    private boolean applyIngredient(final ShapedRecipe recipe, final char key, final String ingredient) {
+        final String lowerIngredient = ingredient.toLowerCase(Locale.ROOT);
 
-        if (lowerIngredient.startsWith("customitem:")) {
-            ItemStack item = Utils.getCustomItem(ingredient.substring("customitem:".length()));
+        if (lowerIngredient.startsWith(CUSTOM_ITEM_PREFIX)) {
+            final ItemStack item = Utils.getCustomItem(ingredient.substring(CUSTOM_ITEM_PREFIX.length()));
             if (item == null) {
                 plugin.getLogger().severe("Неизвестный кастомный предмет в крафте - " + ingredient);
                 return false;
@@ -124,8 +136,8 @@ public class TNTManager {
             return true;
         }
 
-        if (lowerIngredient.startsWith("tnt:")) {
-            CustomTNT customTNT = getCustomTNT(ingredient.substring("tnt:".length()));
+        if (lowerIngredient.startsWith(TNT_PREFIX)) {
+            final CustomTNT customTNT = getCustomTNT(ingredient.substring(TNT_PREFIX.length()));
             if (customTNT == null) {
                 plugin.getLogger().severe("Неизвестный динамит в крафте - " + ingredient);
                 return false;
@@ -134,39 +146,40 @@ public class TNTManager {
             return true;
         }
 
-        try {
-            Material material = Material.valueOf(ingredient.toUpperCase(Locale.ROOT));
+        final Material material = Material.matchMaterial(ingredient);
+        if (material != null) {
             recipe.setIngredient(key, material);
             return true;
-        } catch (IllegalArgumentException exception) {
-            plugin.getLogger().severe("Неизвестный материал - " + ingredient);
-            return false;
         }
+
+        plugin.getLogger().severe("Неизвестный материал - " + ingredient);
+        return false;
     }
 
-    private NamespacedKey getRecipeKey(String name) {
+    private NamespacedKey getRecipeKey(final String name) {
         return new NamespacedKey(plugin, name.toLowerCase(Locale.ROOT));
     }
 
-    public CustomTNT getCustomTNT(ItemStack itemStack) {
+    public CustomTNT getCustomTNT(final ItemStack itemStack) {
         if (itemStack == null || !itemStack.hasItemMeta()) {
             return null;
         }
 
-        String tntType =
+        final String tntType =
                 itemStack.getItemMeta().getPersistentDataContainer().get(tntTypeKey, PersistentDataType.STRING);
         return customTNTs.get(tntType);
     }
 
-    public CustomTNT getCustomTNT(String name) {
+    public CustomTNT getCustomTNT(final String name) {
         return customTNTs.get(name);
     }
 
-    public CustomTNT getCustomTNT(Entity entity) {
-        if (!entity.hasMetadata("TNTType")) {
+    public CustomTNT getCustomTNT(final Entity entity) {
+        if (!entity.hasMetadata(META_TNT_TYPE)) {
             return null;
         }
-        String tntType = entity.getMetadata("TNTType").get(0).asString();
+
+        final String tntType = entity.getMetadata(META_TNT_TYPE).get(0).asString();
         return customTNTs.get(tntType);
     }
 

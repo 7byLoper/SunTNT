@@ -1,7 +1,7 @@
 package ru.loper.suntnt.config;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,6 +22,12 @@ import ru.loper.suntnt.api.model.Rune;
 
 @Getter
 public class TNTConfigManager extends ConfigManager {
+
+    private static final Pattern COMMA_PATTERN = Pattern.compile(",");
+    private static final String CUSTOM_ITEMS_CONFIG = "customItems";
+    private static final String TRANSLATION_CONFIG = "translation";
+    private static final List<Integer> DEFAULT_BLOCKED_SLOTS = List.of(0, 1, 2, 3, 5, 6, 7, 8);
+
     private String giveSenderMessage;
     private String givePlayerMessage;
     private String addCustomItemMessage;
@@ -59,6 +65,7 @@ public class TNTConfigManager extends ConfigManager {
     private boolean disableItemExplosion;
     private boolean disableSpawnerExplosion;
     private boolean disableProtectionBlocksExplosion;
+    private Map<Material, Material> protectionBlocks;
 
     private boolean defaultCustomNameVisible;
     private String defaultCustomName;
@@ -77,7 +84,7 @@ public class TNTConfigManager extends ConfigManager {
     private Map<String, Rune> tntRunes;
     private String runesInfoLore;
 
-    public TNTConfigManager(Plugin plugin) {
+    public TNTConfigManager(final Plugin plugin) {
         super(plugin);
     }
 
@@ -85,8 +92,8 @@ public class TNTConfigManager extends ConfigManager {
     public void loadConfigs() {
         plugin.saveDefaultConfig();
 
-        addCustomConfig(new CustomConfig("customItems", true, plugin));
-        addCustomConfig(new CustomConfig("translation", plugin));
+        addCustomConfig(new CustomConfig(CUSTOM_ITEMS_CONFIG, true, plugin));
+        addCustomConfig(new CustomConfig(TRANSLATION_CONFIG, plugin));
 
         blockedItemKey = new NamespacedKey(plugin, "blocked-item");
         tntGunNamespacedKey = new NamespacedKey(plugin, "tnt-gun");
@@ -94,14 +101,14 @@ public class TNTConfigManager extends ConfigManager {
 
     @Override
     public void loadValues() {
-        entityTranslations = new HashMap<>();
+        entityTranslations = new EnumMap<>(EntityType.class);
 
-        ConfigurationSection entityTranslationsSection =
+        final ConfigurationSection entityTranslationsSection =
                 getTranslationConfig().getConfig().getConfigurationSection("entities");
         if (entityTranslationsSection != null) {
-            for (String key : entityTranslationsSection.getKeys(false)) {
+            for (final String key : entityTranslationsSection.getKeys(false)) {
                 try {
-                    EntityType entityType = EntityType.valueOf(key);
+                    final EntityType entityType = EntityType.valueOf(key);
                     entityTranslations.put(entityType, entityTranslationsSection.getString(key));
                 } catch (IllegalArgumentException e) {
                     plugin.getLogger().warning("Invalid entity type: " + key);
@@ -111,7 +118,7 @@ public class TNTConfigManager extends ConfigManager {
 
         loadMessages();
 
-        ConfigurationSection settingsSection = plugin.getConfig().getConfigurationSection("settings");
+        final ConfigurationSection settingsSection = plugin.getConfig().getConfigurationSection("settings");
         if (settingsSection != null) {
             disableItemExplosion = settingsSection.getBoolean("disable_item_explosion", false);
             disableSpawnerExplosion = settingsSection.getBoolean("disable_spawner_explosion", false);
@@ -125,18 +132,30 @@ public class TNTConfigManager extends ConfigManager {
             defaultCustomName = "";
         }
 
-        ConfigurationSection tntGunSection = plugin.getConfig().getConfigurationSection("tnt_gun");
+        protectionBlocks = new EnumMap<>(Material.class);
+        final ConfigurationSection protectionBlocksSection = plugin.getConfig().getConfigurationSection("protection_blocks");
+        if (protectionBlocksSection != null) {
+            for (final String key : protectionBlocksSection.getKeys(false)) {
+                final Material from = Material.matchMaterial(key);
+                final Material to = Material.matchMaterial(protectionBlocksSection.getString(key, ""));
+                if (from != null && from.isBlock() && to != null && to.isBlock()) {
+                    protectionBlocks.put(from, to);
+                }
+            }
+        }
+
+        final ConfigurationSection tntGunSection = plugin.getConfig().getConfigurationSection("tnt_gun");
         if (tntGunSection != null) {
             tntGunSpeed = tntGunSection.getDouble("speed");
             tntGunRegionBreak = tntGunSection.getBoolean("region_break");
 
-            ConfigurationSection itemBuilderSection = tntGunSection.getConfigurationSection("item");
+            final ConfigurationSection itemBuilderSection = tntGunSection.getConfigurationSection("item");
             tntGunBuilder = itemBuilderSection == null
                     ? new ItemBuilder(Material.DISPENSER)
                     : ItemBuilder.fromConfig(itemBuilderSection);
             tntGunBuilder.namespacedKey(tntGunNamespacedKey, PersistentDataType.STRING, "value");
 
-            ConfigurationSection tntGunBlockedItemSection = tntGunSection.getConfigurationSection("blocked_item");
+            final ConfigurationSection tntGunBlockedItemSection = tntGunSection.getConfigurationSection("blocked_item");
             tntGunBlockedItem = tntGunBlockedItemSection == null
                     ? new ItemBuilder(Material.RED_STAINED_GLASS_PANE)
                     : ItemBuilder.fromConfig(tntGunBlockedItemSection);
@@ -152,21 +171,21 @@ public class TNTConfigManager extends ConfigManager {
             tntGunBlockedItem = new ItemBuilder(Material.RED_STAINED_GLASS_PANE);
             tntGunBlockedItem.namespacedKey(blockedItemKey, PersistentDataType.BYTE, (byte) 0);
 
-            tntGunBlockedSlots = List.of(0, 1, 2, 3, 5, 6, 7, 8);
+            tntGunBlockedSlots = DEFAULT_BLOCKED_SLOTS;
         }
 
         runesInfoLore = StringColorize.parse(plugin.getConfig().getString("runes_info_lore"));
 
         tntRunes = new HashMap<>();
-        ConfigurationSection runesSection = plugin.getConfig().getConfigurationSection("runes");
+        final ConfigurationSection runesSection = plugin.getConfig().getConfigurationSection("runes");
         if (runesSection != null) {
-            for (String key : runesSection.getKeys(false)) {
-                ConfigurationSection runeSection = runesSection.getConfigurationSection(key);
+            for (final String key : runesSection.getKeys(false)) {
+                final ConfigurationSection runeSection = runesSection.getConfigurationSection(key);
                 if (runeSection == null) {
                     continue;
                 }
 
-                Rune rune = createRune(runeSection);
+                final Rune rune = createRune(runeSection);
                 if (rune == null) {
                     continue;
                 }
@@ -213,8 +232,8 @@ public class TNTConfigManager extends ConfigManager {
         playerOnlyCommandMessage = getConfigMessage("messages.player-only-command");
     }
 
-    public Rune createRune(@NotNull ConfigurationSection section) {
-        RuneType runeType = RuneType.getByName(section.getString("rune_type", ""));
+    public Rune createRune(final @NotNull ConfigurationSection section) {
+        final RuneType runeType = RuneType.getByName(section.getString("rune_type", ""));
         if (runeType == null) {
             return null;
         }
@@ -222,55 +241,57 @@ public class TNTConfigManager extends ConfigManager {
         return runeType.createRune();
     }
 
-    public Set<Rune> getRunesFromTNT(ItemStack item) {
+    public Set<Rune> getRunesFromTNT(final ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
-            return new HashSet<>();
+            return Collections.emptySet();
         }
 
-        ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer container = meta.getPersistentDataContainer();
+        final ItemMeta meta = item.getItemMeta();
+        final PersistentDataContainer container = meta.getPersistentDataContainer();
 
         if (!container.has(Rune.getTntRuneKey(), PersistentDataType.STRING)) {
-            return new HashSet<>();
+            return Collections.emptySet();
         }
 
-        String runesData = container.get(Rune.getTntRuneKey(), PersistentDataType.STRING);
+        final String runesData = container.get(Rune.getTntRuneKey(), PersistentDataType.STRING);
         return getRunesFromData(runesData);
     }
 
-    public Set<Rune> getRunesFromData(String runesData) {
+    public Set<Rune> getRunesFromData(final String runesData) {
         if (runesData == null || runesData.isEmpty()) {
             return Collections.emptySet();
         }
 
-        return Arrays.stream(runesData.split(","))
-                .map(tntRunes::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        final Set<Rune> runes = new HashSet<>();
+        for (final String runeName : COMMA_PATTERN.split(runesData)) {
+            final Rune rune = tntRunes.get(runeName);
+            if (rune != null) {
+                runes.add(rune);
+            }
+        }
+
+        return Collections.unmodifiableSet(runes);
     }
 
-    public Rune getRune(String runeName) {
+    public Rune getRune(final String runeName) {
         return tntRunes.get(runeName);
     }
 
-    public String getConfigMessage(String path) {
+    public String getConfigMessage(final String path) {
         return StringColorize.parse(plugin.getConfig().getString(path, "unknown path " + path));
     }
 
     public CustomConfig getTranslationConfig() {
-        return getCustomConfig("translation");
+        return getCustomConfig(TRANSLATION_CONFIG);
     }
 
-    public String getEntityTranslation(EntityType entityType) {
-        return entityTranslations.getOrDefault(entityType, entityType.name().toLowerCase());
+    public String getEntityTranslation(final EntityType entityType) {
+        return entityTranslations.getOrDefault(entityType, entityType.name().toLowerCase(Locale.ROOT));
     }
 
-    public boolean isTNTGunItem(ItemStack itemStack) {
+    public boolean isTNTGunItem(final ItemStack itemStack) {
         return itemStack != null
                 && itemStack.hasItemMeta()
-                && itemStack
-                        .getItemMeta()
-                        .getPersistentDataContainer()
-                        .has(tntGunNamespacedKey, PersistentDataType.STRING);
+                && itemStack.getItemMeta().getPersistentDataContainer().has(tntGunNamespacedKey, PersistentDataType.STRING);
     }
 }

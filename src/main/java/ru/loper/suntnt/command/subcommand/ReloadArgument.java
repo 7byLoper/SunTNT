@@ -12,17 +12,18 @@ import ru.loper.suntnt.manager.TNTManager;
 @RequiredArgsConstructor
 @SubCommandRegister(permission = "suntnt.command.reload", aliases = "reload")
 public class ReloadArgument implements BuildableCommand {
+
     private final TNTConfigManager configManager;
     private final TNTManager tntManager;
 
     @Override
-    public void handle(@NotNull CommandSender commandSender, @NotNull String[] strings) {
+    public void handle(final @NotNull CommandSender commandSender, final @NotNull String[] strings) {
         configManager.reloadAll();
         tntManager.reload();
     }
 
     @Override
-    public List<String> tabComplete(@NotNull CommandSender commandSender, @NotNull String[] strings) {
+    public List<String> tabComplete(final @NotNull CommandSender commandSender, final @NotNull String[] strings) {
         return List.of();
     }
 }

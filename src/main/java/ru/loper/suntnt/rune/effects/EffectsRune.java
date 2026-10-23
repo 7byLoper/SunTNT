@@ -2,6 +2,7 @@ package ru.loper.suntnt.rune.effects;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -14,14 +15,17 @@ import org.bukkit.potion.PotionEffectType;
 import ru.loper.suntnt.api.model.Rune;
 
 public class EffectsRune extends Rune {
+
+    private static final Pattern COLON_PATTERN = Pattern.compile(":");
+    private static final int DEFAULT_DURATION = 20;
+
     protected List<PotionEffect> runeEffects;
     protected EffectsTarget effectsTarget;
     protected GiveAction giveAction;
-
     protected int effectsRadius;
 
     @Override
-    public void onLoad(ConfigurationSection section) {
+    public void onLoad(final ConfigurationSection section) {
         runeEffects = section.getStringList("effects.potions").stream()
                 .map(this::parseEffect)
                 .filter(Objects::nonNull)
@@ -29,22 +33,25 @@ public class EffectsRune extends Rune {
 
         effectsTarget = EffectsTarget.getByName(section.getString("effects.target", ""));
         giveAction = GiveAction.getByName(section.getString("effects.give_action", ""));
-
         effectsRadius = section.getInt("effects.radius");
     }
 
-    protected List<LivingEntity> getTargets(Location location) {
+    protected List<LivingEntity> getTargets(final Location location) {
+        if (effectsTarget == null) {
+            return List.of();
+        }
+
         return location.getNearbyLivingEntities(effectsRadius, effectsRadius, effectsRadius).stream()
                 .filter(entity -> switch (effectsTarget) {
                     case PLAYERS -> entity instanceof Player;
-                    case ENTITIES ->
-                        entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.valueOf("TNT");
+                    case ENTITIES -> entity.getType() != EntityType.PLAYER;
                     case ALL -> true;
                 })
                 .toList();
     }
 
-    public void handleExplosion(TNTPrimed tntPrimed) {
+    @Override
+    public void handleExplosion(final TNTPrimed tntPrimed) {
         if (giveAction != GiveAction.EXPLOSION) {
             return;
         }
@@ -52,7 +59,8 @@ public class EffectsRune extends Rune {
         getTargets(tntPrimed.getLocation()).forEach(entity -> entity.addPotionEffects(runeEffects));
     }
 
-    public void handleSpawn(EntitySpawnEvent event) {
+    @Override
+    public void handleSpawn(final EntitySpawnEvent event) {
         if (giveAction != GiveAction.PRIME) {
             return;
         }
@@ -60,17 +68,27 @@ public class EffectsRune extends Rune {
         getTargets(event.getLocation()).forEach(entity -> entity.addPotionEffects(runeEffects));
     }
 
-    private PotionEffect parseEffect(String effectString) {
-        String[] effectValues = effectString.split(":");
-
-        PotionEffectType effectType = PotionEffectType.getByName(effectValues[0]);
+    private PotionEffect parseEffect(final String effectString) {
+        final String[] effectValues = COLON_PATTERN.split(effectString);
+        final PotionEffectType effectType = PotionEffectType.getByName(effectValues[0]);
         if (effectType == null) {
             return null;
         }
 
-        int effectDuration = Integer.parseInt(effectValues.length > 1 ? effectValues[1] : "20");
-        int effectAmplifier = Integer.parseInt(effectValues.length > 2 ? effectValues[2] : "1") - 1;
+        int duration = DEFAULT_DURATION;
+        if (effectValues.length > 1) {
+            try {
+                duration = Integer.parseInt(effectValues[1]);
+            } catch (NumberFormatException ignored) {}
+        }
 
-        return new PotionEffect(effectType, Math.max(effectDuration, 0), Math.max(effectAmplifier, 0));
+        int amplifier = 0;
+        if (effectValues.length > 2) {
+            try {
+                amplifier = Integer.parseInt(effectValues[2]) - 1;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        return new PotionEffect(effectType, Math.max(duration, 0), Math.max(amplifier, 0));
     }
 }
